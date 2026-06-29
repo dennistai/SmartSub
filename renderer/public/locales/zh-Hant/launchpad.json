@@ -1,0 +1,68 @@
+{
+  "title": "您想做什麼？",
+  "subtitle": "選擇一個任務開始，文件也可以直接拖到卡片上",
+  "card": {
+    "generateTranslate": "視頻 → 雙語字幕",
+    "generateTranslateDesc": "轉寫人聲並翻譯成目標語言，一步到位",
+    "generate": "視頻 → 原文字幕",
+    "generateDesc": "只轉寫人聲，不翻譯",
+    "translate": "翻譯已有字幕",
+    "translateDesc": "把 SRT 等字幕文件翻譯成其它語言",
+    "proofread": "校對字幕",
+    "proofreadDesc": "逐句檢查修改，支持視頻對照與 AI 潤色",
+    "merge": "合成到視頻",
+    "mergeDesc": "把字幕燒錄進畫面，永久顯示"
+  },
+  "needsModelBadge": "需要模型",
+  "banner": {
+    "noModel": "還沒有語音模型——它負責把人聲轉寫成文字，下載一個就能開始",
+    "noModelCta": "下載推薦模型",
+    "noProvider": "想翻譯字幕？先配置一個翻譯服務（也有免費選項）",
+    "noProviderCta": "去配置"
+  },
+  "recentTasks": "最近任務",
+  "noRecentTasks": "還沒有任務記錄，從上面選一個任務開始吧",
+  "dropHint": "鬆手導入文件",
+  "fileCount": "{{count}} 個文件",
+  "recent": {
+    "rename": "重命名",
+    "delete": "刪除",
+    "deleteTitle": "刪除這條任務記錄？",
+    "deleteDesc": "將刪除「{{name}}」的任務記錄，磁盤上的文件不受影響。",
+    "cancel": "取消",
+    "viewAll": "查看全部（{{count}}）",
+    "viewAllPage": "查看全部（{{count}}）",
+    "collapse": "收起",
+    "searchPlaceholder": "搜索任務名稱…",
+    "noMatch": "沒有匹配的任務"
+  },
+  "allTasks": {
+    "title": "全部任務",
+    "description": "查看、篩選和管理所有最近任務記錄",
+    "back": "返回啓動臺",
+    "searchPlaceholder": "按任務名稱搜索…",
+    "typeFilter": "任務類型",
+    "typeAll": "全部類型",
+    "pageRange": "第 {{from}}–{{to}} 條，共 {{total}} 條",
+    "pageInfo": "第 {{page}} / {{totalPages}} 頁",
+    "prevPage": "上一頁",
+    "nextPage": "下一頁",
+    "resultCount": "顯示 {{shown}} / 共 {{total}} 條",
+    "noMatch": "沒有符合篩選條件的任務",
+    "loading": "加載中…",
+    "clearAll": "清除全部",
+    "clearAllTitle": "清除全部任務記錄？",
+    "clearAllDesc": "將刪除 {{count}} 條任務記錄，磁盤上的文件不受影響。",
+    "clearAllConfirm": "確認清除",
+    "emptyTitle": "暫無任務記錄",
+    "emptyHint": "返回啓動臺選擇任務開始，處理完成後會出現在這裏",
+    "emptyCta": "返回啓動臺"
+  },
+  "status": {
+    "waiting": "等待中",
+    "running": "進行中",
+    "done": "已完成",
+    "error": "出錯"
+  },
+  "noRecentTasksHint": "完成的任務會出現在這裏，把文件拖到上方卡片即可開始"
+}

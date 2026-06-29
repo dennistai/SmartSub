@@ -1,0 +1,97 @@
+{
+  "pageTitle": {
+    "generate-translate": "視頻 → 雙語字幕",
+    "generate": "視頻 → 原文字幕",
+    "translate": "翻譯已有字幕"
+  },
+  "backToLaunchpad": "返回任務選擇",
+  "newTaskHint": "新任務 · 導入文件後自動保存到最近任務",
+  "renameTask": "重命名任務",
+  "configBar": {
+    "model": "語音模型",
+    "sourceLanguage": "視頻語言",
+    "subtitleSourceLanguage": "源語言",
+    "targetLanguage": "翻譯成",
+    "provider": "翻譯服務",
+    "style": "輸出內容",
+    "format": "字幕格式"
+  },
+  "notConfigured": "（未配置）",
+  "skippedDuplicates": "已跳過 {{count}} 個重複文件",
+  "goDownloadModel": "去下載模型",
+  "goConfigureProvider": "去配置翻譯服務",
+  "advanced": "高級選項",
+  "advancedDesc": "不常改的細節設置，默認值即最佳實踐",
+  "section": {
+    "recognition": "轉寫",
+    "output": "輸出與保存",
+    "execution": "執行"
+  },
+  "vad": {
+    "label": "語音活動檢測（VAD）",
+    "on": "更快更穩，減少靜音/背景音處的重複或幻覺字幕；時間戳可能略有偏差。",
+    "off": "時間戳更貼合語音；但靜音/音樂處可能產生重複或幻覺字幕。",
+    "hint": "需要嚴格的字幕時間軸對齊時可關閉。此爲全局設置，對所有任務生效。"
+  },
+  "reduceRepetition": {
+    "label": "減少重複 / 幻覺字幕",
+    "on": "已開啓：斷開上文條件並抑制重複，顯著減少靜音/重複段的循環字幕；乾淨語音的連貫性可能略降。",
+    "off": "已關閉：使用引擎默認（保留上文連貫性）；長視頻或靜音處可能出現重複或幻覺字幕。",
+    "hint": "遇到字幕大段重複/鬼畜時開啓。全局設置，對 faster-whisper 與 whisper.cpp 同時生效。"
+  },
+  "chinesePunctuation": {
+    "label": "中文字幕去標點",
+    "hint": "把中文字幕裏的中文標點（，。、？！等）替換爲空格並去掉行尾空格，讓字幕更清爽。源語言爲中文時作用於源字幕，目標爲中文時作用於譯文。"
+  },
+  "stage": {
+    "extract": "提取",
+    "transcribe": "轉寫",
+    "translate": "翻譯"
+  },
+  "row": {
+    "cancelling": "取消中…正在中斷轉寫",
+    "proofread": "校對",
+    "openFolder": "打開所在文件夾",
+    "retry": "重試",
+    "remove": "移除",
+    "embeddedSubtitle": "內封軟字幕直提（已跳過聽寫/ASR）"
+  },
+  "waiting": "等待中",
+  "interrupted": "上次運行被中斷，點擊重試繼續",
+  "completion": {
+    "title": "{{done}} 個文件已完成",
+    "sampleTitle": "示例完成，你的第一份字幕已就緒！",
+    "sampleHint": "可以去校對看看效果，或返回啓動臺開始處理自己的文件",
+    "backHome": "返回啓動臺",
+    "failed": "{{failed}} 個失敗",
+    "goProofread": "去校對",
+    "goMerge": "合成到視頻",
+    "openFolder": "打開文件夾",
+    "retryFailed": "重試失敗項",
+    "allFailedTitle": "全部 {{failed}} 個文件處理失敗",
+    "dismiss": "關閉"
+  },
+  "logs": {
+    "title": "運行日誌（本任務）",
+    "clear": "清空",
+    "empty": "暫無日誌"
+  },
+  "empty": {
+    "dragMedia": "拖拽媒體文件或文件夾到這裏，或點擊上傳",
+    "dragSubtitle": "拖拽字幕文件或文件夾到這裏，或點擊上傳",
+    "mediaFormats": "支持 MP4 / MKV / MOV / MP3 / WAV 等 29 種常見視頻與音頻格式",
+    "subtitleFormats": "支持 SRT / VTT / ASS / SSA / LRC 字幕"
+  },
+  "import": "導入",
+  "clearList": "清空列表",
+  "taskCount": "{{count}} 個任務",
+  "view": {
+    "list": "列表視圖",
+    "grid": "網格視圖"
+  },
+  "listCleared": "已清空文件列表",
+  "meta": {
+    "etaMin": "剩約 {{min}} 分",
+    "etaLessMin": "即將完成"
+  }
+}

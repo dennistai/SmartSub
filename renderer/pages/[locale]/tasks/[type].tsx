@@ -678,7 +678,7 @@ export default function TaskPage() {
 }
 
 export function getStaticPaths() {
-  const locales = ['en', 'zh'];
+  const locales = ['en', 'zh', 'zh-Hant'];
   return {
     fallback: false,
     paths: locales.flatMap((locale) =>
