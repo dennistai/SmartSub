@@ -109,6 +109,24 @@ async function convertDeliverable(
 }
 
 /**
+ * 额外输出一份同名纯文本 .txt（无时间轴），与所选格式并存（exportTxtAlongside 开关）。
+ * 必须在 convertDeliverable 删除中间 .srt 之前调用：从规范 SRT 内容转出 txt。
+ * 失败仅告警，不阻断主流程。
+ */
+async function writeTxtSidecar(srtPath: string): Promise<void> {
+  const txtPath = srtPath.replace(/\.srt$/i, '.txt');
+  if (txtPath === srtPath) return; // 安全兜底：非 .srt 路径不处理
+  try {
+    const content = await fs.promises.readFile(srtPath, 'utf-8');
+    const txt = convertSubtitleContent(content, 'srt', 'txt');
+    await fs.promises.writeFile(txtPath, txt, 'utf-8');
+    logMessage(`txt sidecar written: ${txtPath}`, 'info');
+  } catch (err) {
+    logMessage(`写入纯文本 txt 失败: ${err}`, 'error');
+  }
+}
+
+/**
  * 源字幕中文标点去除（issue #330）：把中文标点替换为空格并清理空白，原位写回。
  * 仅清理文本；SRT 序号/时间码为 ASCII，不受 CJK 标点正则影响。失败仅告警，不阻断主流程。
  */
@@ -469,42 +487,54 @@ export async function processFile(
       await stripSourceSubtitlePunctuation(file.srtFile, fileName);
     }
 
-    // 将交付字幕转换为用户选择的输出格式（内部流程始终为 SRT，此处仅转换最终交付物）
+    // 将交付字幕转换为用户选择的输出格式（内部流程始终为 SRT，此处仅转换最终交付物）。
+    // 另支持 exportTxtAlongside：在所选格式之外额外写一份同名 .txt（所选格式已是 txt 时无意义，跳过）。
     const outputFormat = resolveOutputFormat(formData);
-    if (outputFormat !== 'srt') {
-      // 源字幕：仅在由 ASR 生成且需要保存时转换（noSave 时源字幕会被清理，保持 srt）
-      if (
-        !isSubtitleFile &&
-        shouldGenerateSubtitle &&
-        sourceSrtSaveOption !== 'noSave' &&
-        file.srtFile &&
-        fs.existsSync(file.srtFile)
-      ) {
-        try {
-          file.srtFile = await convertDeliverable(file.srtFile, outputFormat);
-          logMessage(`source subtitle converted to ${outputFormat}`, 'info');
-        } catch (err) {
-          logMessage(`转换源字幕格式失败: ${err}`, 'error');
+    const alsoTxt =
+      formData?.exportTxtAlongside === true && outputFormat !== 'txt';
+
+    // 源字幕：仅在由 ASR 生成且需要保存时处理（noSave 时源字幕会被清理，保持 srt）
+    const sourceQualifies =
+      !isSubtitleFile &&
+      shouldGenerateSubtitle &&
+      sourceSrtSaveOption !== 'noSave' &&
+      file.srtFile &&
+      fs.existsSync(file.srtFile);
+    // 翻译字幕交付物
+    const translatedQualifies =
+      shouldTranslateSubtitle &&
+      translateProvider !== '-1' &&
+      file.translatedSrtFile &&
+      fs.existsSync(file.translatedSrtFile);
+
+    if (outputFormat !== 'srt' || alsoTxt) {
+      if (sourceQualifies) {
+        // 先写 txt sidecar（趁中间 srt 仍在），再转换主交付物格式
+        if (alsoTxt) await writeTxtSidecar(file.srtFile);
+        if (outputFormat !== 'srt') {
+          try {
+            file.srtFile = await convertDeliverable(file.srtFile, outputFormat);
+            logMessage(`source subtitle converted to ${outputFormat}`, 'info');
+          } catch (err) {
+            logMessage(`转换源字幕格式失败: ${err}`, 'error');
+          }
         }
       }
-      // 翻译字幕交付物
-      if (
-        shouldTranslateSubtitle &&
-        translateProvider !== '-1' &&
-        file.translatedSrtFile &&
-        fs.existsSync(file.translatedSrtFile)
-      ) {
-        try {
-          file.translatedSrtFile = await convertDeliverable(
-            file.translatedSrtFile,
-            outputFormat,
-          );
-          logMessage(
-            `translated subtitle converted to ${outputFormat}`,
-            'info',
-          );
-        } catch (err) {
-          logMessage(`转换翻译字幕格式失败: ${err}`, 'error');
+      if (translatedQualifies) {
+        if (alsoTxt) await writeTxtSidecar(file.translatedSrtFile);
+        if (outputFormat !== 'srt') {
+          try {
+            file.translatedSrtFile = await convertDeliverable(
+              file.translatedSrtFile,
+              outputFormat,
+            );
+            logMessage(
+              `translated subtitle converted to ${outputFormat}`,
+              'info',
+            );
+          } catch (err) {
+            logMessage(`转换翻译字幕格式失败: ${err}`, 'error');
+          }
         }
       }
       event.sender.send('taskFileChange', file);

@@ -19,6 +19,8 @@
   "format_ass": "ASS/SSA (.ass)",
   "format_lrc": "LRC 歌詞 (.lrc)",
   "format_txt": "純文本 (.txt)",
+  "exportTxtAlongside": "同時輸出純文本 (.txt)",
+  "exportTxtAlongsideTip": "開啓後，在所選格式之外額外爲源字幕與翻譯字幕各保存一份同名 .txt（純文本、無時間軸）。所選格式已是 TXT 時無需開啓。",
   "taskName": "任務名",
   "startTask": "開始任務",
   "pauseTask": "暫停任務",

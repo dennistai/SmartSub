@@ -19,6 +19,8 @@
   "format_ass": "ASS/SSA (.ass)",
   "format_lrc": "LRC Lyrics (.lrc)",
   "format_txt": "Plain Text (.txt)",
+  "exportTxtAlongside": "Also export plain text (.txt)",
+  "exportTxtAlongsideTip": "When enabled, save an extra same-named .txt (plain text, no timing) for both source and translated subtitles, in addition to the selected format. No need to enable if the selected format is already TXT.",
   "taskName": "Task Name",
   "startTask": "Start Task",
   "pauseTask": "Pause Task",

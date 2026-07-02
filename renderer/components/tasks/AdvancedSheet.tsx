@@ -431,6 +431,29 @@ const AdvancedSheet: React.FC<AdvancedSheetProps> = ({
                     />
                   )}
 
+                  {(isMediaTask || typeDef.hasTranslate) && (
+                    <FormField
+                      control={form.control}
+                      name="exportTxtAlongside"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-2">
+                          <div className="space-y-0.5">
+                            <FormLabel>{tHome('exportTxtAlongside')}</FormLabel>
+                            <FormDescription className="text-xs">
+                              {tHome('exportTxtAlongsideTip')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value === true}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
                   <SectionTitle>{t('section.execution')}</SectionTitle>
                   <FormField
                     control={form.control}

@@ -86,4 +86,6 @@ export interface IFormData {
   subtitleOutputFormat?: 'srt' | 'vtt' | 'ass' | 'lrc' | 'txt';
   /** 中文标点去除（任务级开关）：开启后把中文标点替换为空格。作用于源字幕(中文源)与译文(中文目标)。缺省关闭。 */
   removeChinesePunctuation?: boolean;
+  /** 同时输出纯文本 .txt（任务级开关）：开启后在所选格式之外，额外为源字幕与译文各写一份同名 .txt（无时间轴）。所选格式本身为 txt 时无效。缺省关闭。 */
+  exportTxtAlongside?: boolean;
 }
