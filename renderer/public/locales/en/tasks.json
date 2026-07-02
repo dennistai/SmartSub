@@ -39,6 +39,18 @@
     "off": "Off: engine defaults (keeps cross-segment coherence); long videos or silence may produce repeated or hallucinated lines.",
     "hint": "Turn on when subtitles loop or repeat heavily. Global setting; applies to both faster-whisper and whisper.cpp."
   },
+  "alwaysTraditionalChinese": {
+    "label": "Always output Traditional Chinese (transcription)",
+    "on": "On: any Chinese transcription is normalized to Traditional. Native Traditional (e.g. Whisper Medium) is kept as-is; native Simplified (e.g. Large-v3-Turbo) is converted to Traditional. Never converts to Simplified.",
+    "off": "Off: script follows the source language (中文=Simplified, 繁体中文=Traditional).",
+    "hint": "Global setting. Detects the model's native script; only runs OpenCC when the output is Simplified."
+  },
+  "openccPhraseConversion": {
+    "label": "Taiwanese idiom conversion (OpenCC)",
+    "on": "On: also convert Mainland vocabulary to Taiwanese (信息→資訊, 軟件→軟體). Use when the content is genuinely Mainland wording.",
+    "off": "Off: convert characters only, keep the original wording. Best when Taiwanese speech was mis-transcribed as Simplified.",
+    "hint": "Only applies when a Simplified transcription is converted to Traditional; native Traditional is unaffected."
+  },
   "chinesePunctuation": {
     "label": "Strip Chinese punctuation",
     "hint": "Replace Chinese punctuation (，。、？！ etc.) in Chinese subtitles with spaces and trim trailing spaces for cleaner subtitles. Applies to the source when the source language is Chinese, and to the translation when the target is Chinese."
