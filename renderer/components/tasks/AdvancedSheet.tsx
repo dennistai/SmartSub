@@ -62,6 +62,8 @@ const AdvancedSheet: React.FC<AdvancedSheetProps> = ({
   // 不进 react-hook-form，避免与逐任务的 userConfig 混淆。
   const [vadEnabled, setVadEnabled] = useState(true);
   const [reduceRepetition, setReduceRepetition] = useState(false);
+  const [alwaysTraditional, setAlwaysTraditional] = useState(true);
+  const [openccPhrase, setOpenccPhrase] = useState(false);
   useEffect(() => {
     if (!open) return;
     let active = true;
@@ -70,6 +72,8 @@ const AdvancedSheet: React.FC<AdvancedSheetProps> = ({
       if (active) {
         setVadEnabled(s?.useVAD !== false);
         setReduceRepetition(s?.reduceRepetition === true);
+        setAlwaysTraditional(s?.alwaysTraditionalChinese !== false);
+        setOpenccPhrase(s?.openccPhraseConversion === true);
       }
     })();
     return () => {
@@ -83,6 +87,16 @@ const AdvancedSheet: React.FC<AdvancedSheetProps> = ({
   const handleReduceRepetitionChange = async (checked: boolean) => {
     setReduceRepetition(checked);
     await window?.ipc?.invoke('setSettings', { reduceRepetition: checked });
+  };
+  const handleAlwaysTraditionalChange = async (checked: boolean) => {
+    setAlwaysTraditional(checked);
+    await window?.ipc?.invoke('setSettings', {
+      alwaysTraditionalChinese: checked,
+    });
+  };
+  const handleOpenccPhraseChange = async (checked: boolean) => {
+    setOpenccPhrase(checked);
+    await window?.ipc?.invoke('setSettings', { openccPhraseConversion: checked });
   };
 
   return (
@@ -213,6 +227,48 @@ const AdvancedSheet: React.FC<AdvancedSheetProps> = ({
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {t('reduceRepetition.hint')}
+                        </p>
+                      </div>
+                      <div className="space-y-2 rounded-lg border p-2">
+                        <div className="flex flex-row items-center justify-between gap-2">
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-medium">
+                              {t('alwaysTraditionalChinese.label')}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {alwaysTraditional
+                                ? t('alwaysTraditionalChinese.on')
+                                : t('alwaysTraditionalChinese.off')}
+                            </p>
+                          </div>
+                          <Switch
+                            checked={alwaysTraditional}
+                            onCheckedChange={handleAlwaysTraditionalChange}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {t('alwaysTraditionalChinese.hint')}
+                        </p>
+                      </div>
+                      <div className="space-y-2 rounded-lg border p-2">
+                        <div className="flex flex-row items-center justify-between gap-2">
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-medium">
+                              {t('openccPhraseConversion.label')}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {openccPhrase
+                                ? t('openccPhraseConversion.on')
+                                : t('openccPhraseConversion.off')}
+                            </p>
+                          </div>
+                          <Switch
+                            checked={openccPhrase}
+                            onCheckedChange={handleOpenccPhraseChange}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {t('openccPhraseConversion.hint')}
                         </p>
                       </div>
                     </>
