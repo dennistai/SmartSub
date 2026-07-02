@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { logMessage } from './storeManager';
+import { logMessage, store } from './storeManager';
 import { createMessageSender } from './messageHandler';
 import { getSrtFileName } from './utils';
 import {
@@ -13,6 +13,8 @@ import { routeTranscription } from './transcriptionRouter';
 import {
   getDesiredChineseScript,
   convertChineseText,
+  detectChineseScript,
+  resolveDesiredChineseScript,
   removeChineseSubtitlePunctuation,
 } from './chineseConvert';
 import translate from '../translate';
@@ -418,21 +420,39 @@ export async function processFile(
     }
 
     // 中文简繁归一：仅对「转写/内封提取生成」的源字幕生效（不动用户导入的字幕文件）。
-    // 源语言选中文时，按其简/繁取向把产物统一字形；检测到相反字形才实际改写。
+    // 目标字形由「全局设置 alwaysTraditionalChinese + 来源语言」解析；再侦测转写产物实际字形，
+    // 仅当侦测到「相反字形」时才跑 OpenCC——原生繁体（unknown/traditional）保留，跳过转手。
     if (!isSubtitleFile && shouldGenerateSubtitle && file.srtFile) {
-      const desiredScript = getDesiredChineseScript(sourceLanguage);
+      const settings = store.get('settings');
+      const alwaysTraditional = settings?.alwaysTraditionalChinese !== false; // 默认开
+      const taiwanPhrase = settings?.openccPhraseConversion === true; // 默认关
+      const desiredScript = resolveDesiredChineseScript(
+        sourceLanguage,
+        alwaysTraditional,
+      );
       if (desiredScript) {
         try {
           throwIfTaskCancelled();
           const original = await fs.promises.readFile(file.srtFile, 'utf-8');
-          const { text, converted } = convertChineseText(
-            original,
-            desiredScript,
-          );
-          if (converted) {
-            await fs.promises.writeFile(file.srtFile, text, 'utf-8');
+          const detected = detectChineseScript(original);
+          if (detected !== 'unknown' && detected !== desiredScript) {
+            const { text, converted } = convertChineseText(
+              original,
+              desiredScript,
+              { taiwanPhrase },
+            );
+            if (converted) {
+              await fs.promises.writeFile(file.srtFile, text, 'utf-8');
+              logMessage(
+                `normalized source subtitle to ${desiredScript} (from ${detected}${
+                  taiwanPhrase ? ', +tw phrases' : ''
+                }): ${fileName}`,
+                'info',
+              );
+            }
+          } else {
             logMessage(
-              `normalized source subtitle to ${desiredScript} Chinese: ${fileName}`,
+              `source subtitle already ${desiredScript} (native), skip OpenCC: ${fileName}`,
               'info',
             );
           }
