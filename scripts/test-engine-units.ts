@@ -12,6 +12,9 @@
  *       属手动冒烟（见 README 的 docs 说明 / 设计文档 §8），本脚本不覆盖。
  */
 import {
+  convertChineseText,
+} from '../main/helpers/chineseConvert';
+import {
   getNumericSetting,
   getWhisperLanguage,
   secondsToSrtTime,
@@ -936,6 +939,33 @@ eq(
   FIRERED_MODELS['fire-red-asr-large-zh-en'].requiredFiles,
   ['encoder.int8.onnx', 'decoder.int8.onnx', 'tokens.txt'],
   'import: fireRed requiredFiles',
+);
+
+// --- convertChineseText: 简→繁 字形 / 用词 ---
+eq(
+  convertChineseText('这是软件信息', 'traditional').text,
+  '這是軟件信息',
+  'convert: s2tw 只转字形（软件信息保留）',
+);
+eq(
+  convertChineseText('这是软件信息', 'traditional').converted,
+  true,
+  'convert: s2tw converted=true',
+);
+eq(
+  convertChineseText('这是软件信息', 'traditional', { taiwanPhrase: true }).text,
+  '這是軟體資訊',
+  'convert: s2twp 台湾用词（软件信息→軟體資訊）',
+);
+eq(
+  convertChineseText('這是繁體中文測試', 'traditional').text,
+  '這是繁體中文測試',
+  'convert: 已繁体 s2tw 不改写',
+);
+eq(
+  convertChineseText('這是繁體中文測試', 'traditional').converted,
+  false,
+  'convert: 已繁体 converted=false',
 );
 
 console.log(`\nengine unit tests: ${passed} passed, ${failed} failed`);

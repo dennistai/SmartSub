@@ -12,7 +12,8 @@ export type ChineseScript = 'simplified' | 'traditional';
 type ConvertFn = (text: string) => string;
 
 let t2sConverter: ConvertFn | null = null;
-let s2tConverter: ConvertFn | null = null;
+let s2twConverter: ConvertFn | null = null;
+let s2twpConverter: ConvertFn | null = null;
 
 /** 繁（OpenCC 标准）→ 简（大陆）。惰性创建并缓存。 */
 function getT2S(): ConvertFn {
@@ -20,10 +21,16 @@ function getT2S(): ConvertFn {
   return t2sConverter;
 }
 
-/** 简（大陆）→ 繁（OpenCC 标准）。惰性创建并缓存。 */
-function getS2T(): ConvertFn {
-  if (!s2tConverter) s2tConverter = Converter({ from: 'cn', to: 't' });
-  return s2tConverter;
+/** 简（大陆）→ 繁（台湾字形，不转用词）。惰性创建并缓存。 */
+function getS2TW(): ConvertFn {
+  if (!s2twConverter) s2twConverter = Converter({ from: 'cn', to: 'tw' });
+  return s2twConverter;
+}
+
+/** 简（大陆）→ 繁（台湾字形 + 台湾用词）。惰性创建并缓存。 */
+function getS2TWP(): ConvertFn {
+  if (!s2twpConverter) s2twpConverter = Converter({ from: 'cn', to: 'twp' });
+  return s2twpConverter;
 }
 
 /**
@@ -42,6 +49,11 @@ export function getDesiredChineseScript(lang?: string): ChineseScript | null {
   return 'simplified';
 }
 
+export interface ConvertChineseOptions {
+  /** 目标为繁体时是否套用台湾用词转换（s2twp）；否则只转字形（s2tw）。默认 false。 */
+  taiwanPhrase?: boolean;
+}
+
 /**
  * 按期望字形转换文本；仅当结果与原文不同（即检测到相反字形）时标记 converted。
  * 对 SRT 全文安全：序号/时间码/`-->` 均为 ASCII，OpenCC 不会改动。
@@ -49,9 +61,15 @@ export function getDesiredChineseScript(lang?: string): ChineseScript | null {
 export function convertChineseText(
   text: string,
   desired: ChineseScript,
+  opts?: ConvertChineseOptions,
 ): { text: string; converted: boolean } {
   if (!text) return { text, converted: false };
-  const convert = desired === 'simplified' ? getT2S() : getS2T();
+  const convert =
+    desired === 'simplified'
+      ? getT2S()
+      : opts?.taiwanPhrase
+        ? getS2TWP()
+        : getS2TW();
   const out = convert(text);
   return { text: out, converted: out !== text };
 }
