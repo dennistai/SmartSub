@@ -33,6 +33,8 @@ export const store = new Store<StoreType>({
       vadSpeechPad: 200,
       vadSamplesOverlap: 0.1,
       reduceRepetition: false,
+      alwaysTraditionalChinese: true,
+      openccPhraseConversion: false,
       fasterWhisperDevice: 'auto' as const,
       fasterWhisperComputeType: 'auto',
       proxyMode: 'none' as const,
