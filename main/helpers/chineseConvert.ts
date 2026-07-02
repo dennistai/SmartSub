@@ -74,6 +74,48 @@ export function convertChineseText(
   return { text: out, converted: out !== text };
 }
 
+/** 统计两串对应位置不同的字数；长度不同时以「长度差 + 公共区差异」保守计数。 */
+function countChangedChars(a: string, b: string): number {
+  if (a === b) return 0;
+  const len = Math.min(a.length, b.length);
+  let diff = Math.abs(a.length - b.length);
+  for (let i = 0; i < len; i++) {
+    if (a[i] !== b[i]) diff++;
+  }
+  return diff;
+}
+
+/**
+ * 侦测文本主体中文字形（与转写模型解耦，以实际输出为准）。
+ * 用字形级两向转换各自「改动字数」比较：
+ *  - simplifiedSignal：s2tw 会改动的字数（= 简体专用字）
+ *  - traditionalSignal：t2s 会改动的字数（= 繁体专用字）
+ * 皆为 0 → 'unknown'（无可辨识中文字）。tie-break 偏繁：
+ * 唯有 simplifiedSignal > traditionalSignal 才判 'simplified'。
+ */
+export function detectChineseScript(text: string): ChineseScript | 'unknown' {
+  if (!text) return 'unknown';
+  const simplifiedSignal = countChangedChars(text, getS2TW()(text));
+  const traditionalSignal = countChangedChars(text, getT2S()(text));
+  if (simplifiedSignal === 0 && traditionalSignal === 0) return 'unknown';
+  return simplifiedSignal > traditionalSignal ? 'simplified' : 'traditional';
+}
+
+/**
+ * 结合全局设定解析目标字形：
+ *  - 来源非中文 → null（不处理）
+ *  - 来源中文 + alwaysTraditional → 一律 'traditional'
+ *  - 来源中文 + !alwaysTraditional → 沿用 getDesiredChineseScript(sourceLanguage)
+ */
+export function resolveDesiredChineseScript(
+  sourceLanguage: string | undefined,
+  alwaysTraditional: boolean,
+): ChineseScript | null {
+  const base = getDesiredChineseScript(sourceLanguage);
+  if (base !== null && alwaysTraditional) return 'traditional';
+  return base;
+}
+
 /**
  * 需要被替换为空格的中文/全角标点集合（issue #330）。
  *

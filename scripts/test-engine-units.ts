@@ -13,6 +13,8 @@
  */
 import {
   convertChineseText,
+  detectChineseScript,
+  resolveDesiredChineseScript,
 } from '../main/helpers/chineseConvert';
 import {
   getNumericSetting,
@@ -967,6 +969,22 @@ eq(
   false,
   'convert: 已繁体 converted=false',
 );
+
+// --- detectChineseScript ---
+eq(detectChineseScript('這是繁體中文測試'), 'traditional', 'detect: 纯繁 -> traditional');
+eq(detectChineseScript('这是简体中文测试'), 'simplified', 'detect: 纯简 -> simplified');
+eq(detectChineseScript('2024-01 OK.'), 'unknown', 'detect: 无中文 -> unknown');
+eq(detectChineseScript(''), 'unknown', 'detect: 空串 -> unknown');
+eq(detectChineseScript('內存不足'), 'traditional', 'detect: 台湾繁体用词 -> traditional');
+
+// --- resolveDesiredChineseScript ---
+eq(resolveDesiredChineseScript('zh', true), 'traditional', 'resolve: zh + always -> traditional');
+eq(resolveDesiredChineseScript('zh', false), 'simplified', 'resolve: zh + !always -> simplified');
+eq(resolveDesiredChineseScript('zh-Hant', false), 'traditional', 'resolve: zh-Hant -> traditional');
+eq(resolveDesiredChineseScript('zh-Hant', true), 'traditional', 'resolve: zh-Hant + always -> traditional');
+eq(resolveDesiredChineseScript('en', true), null, 'resolve: 非中文 + always -> null');
+eq(resolveDesiredChineseScript('en', false), null, 'resolve: 非中文 -> null');
+eq(resolveDesiredChineseScript(undefined, true), null, 'resolve: undefined -> null');
 
 console.log(`\nengine unit tests: ${passed} passed, ${failed} failed`);
 if (failed > 0) {
