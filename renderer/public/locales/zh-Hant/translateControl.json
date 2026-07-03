@@ -37,6 +37,11 @@
   "API Key": "API Key",
   "systemPrompt": "系統提示詞",
   "systemPromptTips": "系統提示詞, 支持變量: <br /> ${sourceLanguage} 源語言 <br /> ${targetLanguage} 目標語言 <br /> ${content} 源字幕",
+  "applyPromptPreset": "套用模板",
+  "promptPreset": {
+    "default": "默認翻譯",
+    "multilingualToTraditional": "多語會議 → 繁體中文"
+  },
   "userPromptTips": "用戶提示詞, 支持變量: <br /> ${sourceLanguage} 源語言 <br /> ${targetLanguage} 目標語言 <br /> ${content} 源字幕",
   "batchSizeTip": "每次翻譯的字幕數量，建議設置爲 5-20 之間",
   "batchConcurrencyTip": "同時發起的翻譯批次數，最多 10。默認 1 爲順序處理；調大可以提升速度，但需要服務商配額支持，並可能觸發限流。",

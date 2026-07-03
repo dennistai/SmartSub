@@ -37,6 +37,11 @@
   "API Key": "API Key",
   "systemPrompt": "System Prompt",
   "systemPromptTips": "System prompt, supports variables: <br /> ${sourceLanguage} Source language <br /> ${targetLanguage} Target language <br /> ${content} Source subtitle",
+  "applyPromptPreset": "Apply template",
+  "promptPreset": {
+    "default": "Default translation",
+    "multilingualToTraditional": "Multilingual meeting → Traditional Chinese"
+  },
   "userPromptTips": "User prompt, supports variables: <br /> ${sourceLanguage} Source language <br /> ${targetLanguage} Target language <br /> ${content} Source subtitle",
   "testTranslation": "Test Translation",
   "testSuccess": "Test Successful",
