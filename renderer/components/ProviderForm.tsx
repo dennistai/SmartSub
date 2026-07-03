@@ -13,7 +13,7 @@ import {
   Plus,
   X,
 } from 'lucide-react';
-import { ProviderField } from '../../types';
+import { ProviderField, SYSTEM_PROMPT_PRESETS } from '../../types';
 import { useTranslation } from 'next-i18next';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -394,6 +394,39 @@ export const ProviderForm: React.FC<ProviderFormProps> = ({
         );
 
       case 'textarea':
+        if (field.key === 'systemPrompt') {
+          return (
+            <div className="space-y-2">
+              <Select
+                value=""
+                onValueChange={(labelKey) => {
+                  const preset = SYSTEM_PROMPT_PRESETS.find(
+                    (p) => p.labelKey === labelKey,
+                  );
+                  if (preset) onChange(field.key, preset.value);
+                }}
+              >
+                <SelectTrigger className="h-8 w-auto">
+                  <SelectValue placeholder={t('applyPromptPreset')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {SYSTEM_PROMPT_PRESETS.map((p) => (
+                    <SelectItem key={p.labelKey} value={p.labelKey}>
+                      {t(p.labelKey)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Textarea
+                id={fieldDomId(field.key)}
+                value={value}
+                onChange={(e) => onChange(field.key, e.target.value)}
+                placeholder={fieldPlaceholder(field.placeholder)}
+                rows={3}
+              />
+            </div>
+          );
+        }
         return (
           <Textarea
             id={fieldDomId(field.key)}
