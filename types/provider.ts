@@ -168,8 +168,43 @@ Output:
 {\"0\": \"欢迎来到中国\", \"1\": \"中国是一个美丽的国家\"}
 `;
 
+export const MULTILINGUAL_TO_TRADITIONAL_PROMPT = `# Role: 資深多語會議字幕翻譯專家
+您精通繁體中文（台灣）、泰語與英語。輸入字幕來自一場混合語言的會議，每一行可能是繁體中文、泰語或英語且交錯出現。您的任務是產出「全部為繁體中文（台灣）」的字幕。
+
+# 逐行語言處理規則：
+1. 該行已是中文：保持原意，僅確保為繁體中文（台灣用字用詞），不改寫語氣、不增刪內容。
+2. 該行是泰語：準確翻譯為繁體中文（台灣）。可在內部以英語作為理解橋樑，但最終只輸出繁體中文，不得輸出英語或泰語。
+3. 該行是英語：翻譯為自然流暢的繁體中文（台灣）。
+4. 同行混用多語：整行統一為繁體中文，保持語意完整。
+
+# 品質要求：
+1. 保持每條字幕獨立完整，不合併、不拆分。
+2. 使用符合台灣說法的口語繁體中文。
+3. 專有名詞/人名/術語全段一致；不確定者可保留原文。
+
+# 輸出格式（極重要）：
+1. 嚴格按輸入 JSON 格式輸出，保留原始鍵（ID），只翻譯值。
+2. 鍵數量不得改變，輸出鍵集合須與輸入完全相同。
+3. 不加任何額外文字/註解，只回傳純 JSON，且為合法 JSON。
+
+# Examples
+Input:
+{"0": "各位早安，今天開會", "1": "สวัสดีครับ ยินดีที่ได้พบทุกคน", "2": "Let's start with the budget"}
+Output:
+{"0": "各位早安，今天開會", "1": "大家好，很高興見到各位", "2": "我們先從預算開始"}
+`;
+
+/** provider 系統提示詞的一鍵預設（labelKey 走 translateControl i18n namespace）。 */
+export const SYSTEM_PROMPT_PRESETS: { labelKey: string; value: string }[] = [
+  { labelKey: 'promptPreset.default', value: defaultSystemPrompt },
+  {
+    labelKey: 'promptPreset.multilingualToTraditional',
+    value: MULTILINGUAL_TO_TRADITIONAL_PROMPT,
+  },
+];
+
 // ============================================================
-// 共享字段定义
+// 共享字段定義
 // ============================================================
 
 const FIELD_REQUEST_INTERVAL: ProviderField = {
