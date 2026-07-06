@@ -550,6 +550,56 @@ const AdvancedSheet: React.FC<AdvancedSheetProps> = ({
                     />
                   )}
 
+                  {(isMediaTask || typeDef.hasTranslate) && (
+                    <FormField
+                      control={form.control}
+                      name="annotateMixedSourceLanguage"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-2">
+                          <div className="space-y-0.5">
+                            <FormLabel>
+                              {t('annotateMixedSourceLanguage.label')}
+                            </FormLabel>
+                            <FormDescription className="text-xs">
+                              {t('annotateMixedSourceLanguage.hint')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value === true}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {isMediaTask && (
+                    <FormField
+                      control={form.control}
+                      name="multiLanguageTranscription"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-2">
+                          <div className="space-y-0.5">
+                            <FormLabel>
+                              {t('multiLanguageTranscription.label')}
+                            </FormLabel>
+                            <FormDescription className="text-xs">
+                              {t('multiLanguageTranscription.hint')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value === true}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
                   {showFormatHere && (
                     <FormField
                       control={form.control}
