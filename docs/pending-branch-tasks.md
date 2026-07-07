@@ -1,15 +1,16 @@
 # 待處理分支任務（分支清理後的 backlog）
 
 > 背景：清理遠端分支時，以下分支**無法自動併入 `main`**（與現行架構分岔、需 rebase／手動解衝突），
-> 但**內含有價值的未完成工作**，故先刪除分支、把工作記錄於此。分支已刪，但 commit 仍可用 SHA 復原：
+> 但**內含有價值的未完成工作**，故先刪除分支、把工作記錄於此。每個分支的 tip 都已打成
+> **`archive/*` 標籤推到遠端**（永久可達，不會被 GC），復原很簡單：
 >
 > ```bash
-> git branch <name> <sha>          # 復原到本機
-> git push origin <name>           # （需要時）推回遠端
-> git rebase main                  # 在該分支上 rebase 到最新 main，解衝突後發 PR
+> git fetch origin --tags
+> git switch -c <name> archive/<name>   # 從標籤重建分支
+> git rebase main                        # rebase 到最新 main，解衝突後發 PR
 > ```
 >
-> 完整刪除紀錄（含所有 SHA）：`scratchpad/deleted-branches-batch3.txt`（另有 batch1/batch2 為純過時分支，不列任務）。
+> 每則任務同時附原始 SHA。純過時／無內容分支（batch1/batch2）未打標籤、不列任務。
 
 ## 高優先
 
