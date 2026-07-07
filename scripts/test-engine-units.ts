@@ -23,6 +23,11 @@ import {
   DEFAULT_LANGUAGE_MODEL_ROUTES,
 } from '../main/helpers/engines/languageModelRouting';
 import {
+  convertChineseText,
+  detectChineseScript,
+  resolveDesiredChineseScript,
+} from '../main/helpers/chineseConvert';
+import {
   isProtocolSupported,
   isRemoteProtocolInstallable,
   SUPPORTED_PROTOCOL_MAX,
@@ -275,6 +280,80 @@ eq(getNumericSetting('x', 1), 1, 'num: string -> default');
     'route: default table has zh/en/th',
   );
 }
+
+// --- convertChineseText: 简→繁 字形 / 用词 ---
+eq(
+  convertChineseText('这是软件信息', 'traditional').text,
+  '這是軟件信息',
+  'convert: s2tw 只转字形（软件信息保留）',
+);
+eq(
+  convertChineseText('这是软件信息', 'traditional').converted,
+  true,
+  'convert: s2tw converted=true',
+);
+eq(
+  convertChineseText('这是软件信息', 'traditional', { taiwanPhrase: true })
+    .text,
+  '這是軟體資訊',
+  'convert: s2twp 台湾用词（软件信息→軟體資訊）',
+);
+eq(
+  convertChineseText('這是繁體中文測試', 'traditional').text,
+  '這是繁體中文測試',
+  'convert: 已繁体 s2tw 不改写',
+);
+eq(
+  convertChineseText('這是繁體中文測試', 'traditional').converted,
+  false,
+  'convert: 已繁体 converted=false',
+);
+
+// --- detectChineseScript ---
+eq(
+  detectChineseScript('這是繁體中文測試'),
+  'traditional',
+  'detect: 纯繁 -> traditional',
+);
+eq(
+  detectChineseScript('这是简体中文测试'),
+  'simplified',
+  'detect: 纯简 -> simplified',
+);
+eq(detectChineseScript('2024-01 OK.'), 'unknown', 'detect: 无中文 -> unknown');
+eq(detectChineseScript(''), 'unknown', 'detect: 空串 -> unknown');
+eq(
+  detectChineseScript('內存不足'),
+  'traditional',
+  'detect: 台湾繁体用词 -> traditional',
+);
+
+// --- resolveDesiredChineseScript ---
+eq(
+  resolveDesiredChineseScript('zh', true),
+  'traditional',
+  'resolve: zh + always -> traditional',
+);
+eq(
+  resolveDesiredChineseScript('zh', false),
+  'simplified',
+  'resolve: zh + !always -> simplified',
+);
+eq(
+  resolveDesiredChineseScript('zh-Hant', false),
+  'traditional',
+  'resolve: zh-Hant -> traditional',
+);
+eq(
+  resolveDesiredChineseScript('en', true),
+  null,
+  'resolve: 非中文 + always -> null',
+);
+eq(
+  resolveDesiredChineseScript(undefined, true),
+  null,
+  'resolve: undefined -> null',
+);
 
 // --- getVadSettings ---
 eq(

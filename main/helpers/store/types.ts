@@ -49,6 +49,12 @@ export type StoreType = {
     vadSamplesOverlap: number;
     /** 抗幻觉/抗重复：开启后断开上文条件并抑制重复（builtin: max_context=0；faster-whisper: condition_on_previous_text=false + no_repeat_ngram/repetition_penalty 等）。默认关闭，按需开启。 */
     reduceRepetition?: boolean;
+    /** 中文语音转写一律输出繁体：开启后任何中文来源的转写源字幕最终归一为繁体
+     *  （原生繁体保留、原生简体 s2tw 转繁；永不转简）。默认开启。 */
+    alwaysTraditionalChinese?: boolean;
+    /** OpenCC 台湾用词转换：仅在简→繁 OpenCC 转换时生效。
+     *  关（默认）→ s2tw（只转字形）；开 → s2twp（含台湾用词）。 */
+    openccPhraseConversion?: boolean;
     /*
      * 字幕效果档位（SubtitleOutcome）是**任务级**配置，存在 userConfig.subtitleOutcome（formData），
      * 与 maxContext/useVAD/reduceRepetition 同源、按「上次使用」记忆，不在全局 settings 里。

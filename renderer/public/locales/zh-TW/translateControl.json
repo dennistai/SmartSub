@@ -1,4 +1,9 @@
 {
+  "applyPromptPreset": "套用預設",
+  "promptPreset": {
+    "default": "通用翻譯",
+    "multilingualToTraditional": "多語會議 → 繁體中文"
+  },
   "translateControl": "翻譯服務設定",
   "translationServices": "翻譯服務",
   "providerListTitle": "服務商",
