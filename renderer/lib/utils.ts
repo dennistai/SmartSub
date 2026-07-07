@@ -4,6 +4,7 @@ import {
   DEFAULT_DOWNLOAD_ENDPOINTS,
   type DownloadEndpointConfig,
 } from '../../types/downloadConfig';
+import { getSpecialGgmlSource } from '../../types/specialGgmlModels';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -217,6 +218,9 @@ export const modelCategories: ModelCategory[] = [
     quality: 5,
     minRAM: 16,
     models: [
+      // 联发科 Breeze-ASR-25：Whisper-large-v2 微调，台湾腔中文 + 中英夹杂最佳。
+      // 采用社群预转的 whisper.cpp q5_k 量化版（来源覆写见 types/specialGgmlModels）。
+      { name: 'breeze-asr-25', size: '1.08 GB', needsCoreML: false },
       { name: 'large-v3', size: '3.1 GB', needsCoreML: true },
       {
         name: 'large-v3-q5_0',
@@ -412,6 +416,11 @@ export const getModelDownloadUrl = (
     source === 'hf-mirror'
       ? endpoints.huggingFaceMirror
       : endpoints.huggingFaceOfficial;
+  // 特殊来源模型（如 Breeze）：仓库/远端文件名与标准 whisper.cpp 不同，按表覆写复制链接。
+  const special = getSpecialGgmlSource(modelName);
+  if (special) {
+    return `${base}/${special.repo}/resolve/main/${special.remoteFile}?download=true`;
+  }
   return `${base}/ggerganov/whisper.cpp/resolve/main/ggml-${modelName.toLowerCase()}.bin?download=true`;
 };
 

@@ -12,6 +12,7 @@ import {
   RangeNotSupportedError,
 } from './download/parallelDownloader';
 import { getHfHost } from './config/downloadConfig';
+import { getSpecialGgmlSource } from '../../types/specialGgmlModels';
 
 export interface ModelDownloadProgress {
   status: 'idle' | 'downloading' | 'extracting' | 'completed' | 'error';
@@ -162,15 +163,24 @@ export class ModelDownloader {
       `ggml-${model}-encoder.mlmodelc`,
     );
 
+    // 特殊来源模型（如 Breeze）：覆写仓库 + 远端文件名；本机仍存 `ggml-${model}.bin`。
+    // 其仓库通常无 CoreML zip，命中即强制关闭 CoreML 下载。
+    const special = getSpecialGgmlSource(model);
+    const effectiveNeedsCoreML = special ? special.hasCoreML : needsCoreML;
+
     const needDownloadMain = !fs.existsSync(modelPath);
     const needDownloadCoreML =
-      needsCoreML && isAppleSilicon() && !fs.existsSync(coreMLModelPath);
+      effectiveNeedsCoreML &&
+      isAppleSilicon() &&
+      !fs.existsSync(coreMLModelPath);
 
     if (!needDownloadMain && !needDownloadCoreML) {
       return true;
     }
 
-    const baseUrl = `${getHfHost(source)}/ggerganov/whisper.cpp/resolve/main`;
+    const baseUrl = special
+      ? `${getHfHost(source)}/${special.repo}/resolve/main`
+      : `${getHfHost(source)}/ggerganov/whisper.cpp/resolve/main`;
 
     this.currentModel = model;
     this.abortController = new AbortController();
@@ -189,7 +199,9 @@ export class ModelDownloader {
 
     try {
       if (needDownloadMain) {
-        const url = `${baseUrl}/ggml-${model}.bin`;
+        // 特殊来源用其远端文件名；标准模型仍是 `ggml-${model}.bin`。本机落盘名不变。
+        const remoteFile = special ? special.remoteFile : `ggml-${model}.bin`;
+        const url = `${baseUrl}/${remoteFile}`;
         const tempPath = `${modelPath}.download`;
 
         const existingState = readDownloadState();

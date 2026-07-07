@@ -1,9 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import { getPath, loadWhisperAddon } from '../whisper';
+import { getPath, loadWhisperAddon, getModelsInstalled } from '../whisper';
 import { logMessage, store } from '../storeManager';
+import {
+  DEFAULT_LANGUAGE_MODEL_ROUTES,
+  resolveModelForLanguage,
+  type LanguageModelRoutes,
+} from './languageModelRouting';
 import { ensureTempDir, formatSrtContent, getMd5 } from '../fileUtils';
 import { extractAudioSegment } from '../audioProcessor';
+import { detectLanguage } from '../audioLid';
 import { getExtraResourcesPath } from '../utils';
 import { writeLangMap, type LangMapCue } from '../langMapData';
 import {
@@ -65,11 +71,26 @@ export async function transcribeMultilingual(
 
   const { whisperAsync, backend } = await loadWhisperAddon(whisperModel);
   const useGpu = backend !== 'cpu';
-  const modelPath = `${getPath('modelsPath')}/ggml-${whisperModel}.bin`;
+  const modelsDir = getPath('modelsPath');
   const vadModelPath = path.join(
     getExtraResourcesPath(),
     'ggml-silero-v6.2.0.bin',
   );
+
+  // 依语言路由模型：同一 addon 可按 `model` 路径转录不同 ggml 模型，故逐段按 MMS-LID 语言
+  // 选最合适的模型（如 zh→Breeze、th→turbo）。仅当路由目标已安装时切换，否则回退基础模型
+  // （优雅降级，用户只装一个模型时行为不变）。可经设置关闭 / 覆盖路由表。
+  const routingEnabled =
+    (settings as { multilingualModelRouting?: boolean })
+      .multilingualModelRouting !== false;
+  const routeOverrides = (
+    settings as { multilingualLanguageModelRoutes?: LanguageModelRoutes }
+  ).multilingualLanguageModelRoutes;
+  const routes =
+    routeOverrides && Object.keys(routeOverrides).length
+      ? routeOverrides
+      : DEFAULT_LANGUAGE_MODEL_ROUTES;
+  const installedModels = getModelsInstalled();
 
   const totalDuration = file.duration || readWavDurationSec(tempAudioFile);
   const nChunks = Math.max(1, Math.ceil(totalDuration / CHUNK_SECONDS));
@@ -96,9 +117,24 @@ export async function transcribeMultilingual(
     await extractAudioSegment(tempAudioFile, start, dur, chunkWav);
     throwIfTaskCancelled();
 
+    // 专用音频 LID（MMS-LID）决定该段语言，取代 whisper auto；不可用则回退 auto。
+    const lidLang = await detectLanguage(chunkWav);
+    throwIfTaskCancelled();
+
+    // 依语言选本段模型：命中路由（且已安装）则用之，否则用基础模型。
+    const chunkModel = routingEnabled
+      ? resolveModelForLanguage(
+          lidLang,
+          whisperModel as string,
+          installedModels,
+          routes,
+        )
+      : (whisperModel as string);
+    const chunkModelPath = `${modelsDir}/ggml-${chunkModel}.bin`;
+
     const result = await whisperAsync({
-      language: 'auto',
-      model: modelPath,
+      language: lidLang ?? 'auto',
+      model: chunkModelPath,
       fname_inp: chunkWav,
       use_gpu: useGpu,
       flash_attn: false,
@@ -130,7 +166,8 @@ export async function transcribeMultilingual(
       throw new TaskCancelledError();
     }
 
-    const lang: string = result?.language || 'auto';
+    // 语言标记：优先 LID 判定（可靠），否则回退 whisper 偵測
+    const lang: string = lidLang ?? (result?.language || 'auto');
     const triples = (result?.transcription ?? []) as [string, string, string][];
     for (const seg of triples) {
       const text = (seg[2] || '').trim();
@@ -158,7 +195,7 @@ export async function transcribeMultilingual(
       Math.min(((i + 1) / nChunks) * 100, 100),
     );
     logMessage(
-      `multilingual chunk ${i + 1}/${nChunks} @${start}s lang=${lang} (+${triples.length} cues)`,
+      `multilingual chunk ${i + 1}/${nChunks} @${start}s lang=${lang} model=${chunkModel} (+${triples.length} cues)`,
       'info',
     );
   }
