@@ -14,15 +14,16 @@
 
 ## 高優先
 
-### 1. 繁化／台灣用詞／多語會議提示詞　`feat/traditional-chinese-and-multilingual`
+### 1. 繁化／台灣用詞／多語會議提示詞　`feat/traditional-chinese-and-multilingual`　✅ 已重整入 main（核心）
 
-- **SHA**：`e23908d55cf3c7c4f2794031a937a2163f43b8fe`（+21 commits）
-- **內容**：譯文簡繁歸一 + `alwaysTraditionalChinese`／`openccPhraseConversion` 設定、台灣用詞開關、
-  源字幕字形偵測（原生繁體保留／永不轉簡）、多語會議→繁體提示詞常量與預設、系統提示詞一鍵套用模板、
-  泰文原樣保留不翻譯、Phase 2 設計 spec。
-- **需重構原因**：與 `main` 已有的多語轉錄／zh-TW 支援**高度重疊**（main 已含混合語言標註、首啟繁中等），
-  直接併入必衝突。需逐 commit 挑揀「main 尚未有」的部分（尤其字形偵測歸一、台灣用詞開關、提示詞預設）
-  重新 rebase 對齊。**價值最高，建議優先處理。**
+- **狀態**：核心 net-new 功能已 surgical 移植入 main（commit `feat(chinese): 繁化歸一…`）——
+  字形偵測歸一（原生繁體保留／永不轉簡）、`alwaysTraditionalChinese`(預設開)／`openccPhraseConversion`(預設關)
+  設定、fileProcessor/translate 台灣字形+用詞、`MULTILINGUAL_TO_TRADITIONAL_PROMPT` + 系統提示詞一鍵預設、
+  i18n、15 條單元測試。採 surgical 移植（非整檔），以免回退 main 的 mixed-annotation／cloud-asr／Breeze。
+- **仍待辦（低優先）**：兩個設定開關的 **AdvancedSheet UI** 未移植——分支版 AdvancedSheet 已與 main 大幅分歧
+  （整檔套用會回退 `multiLanguageTranscription` 等），需在現行 AdvancedSheet「新增」兩個 Switch
+  （讀 getSettings／寫 setSettings）。預設值已合理、設定仍經後端生效，故暫緩。
+- **SHA**：`e23908d55cf3c7c4f2794031a937a2163f43b8fe`（+21，另含 Phase 2 設計 spec 等文件）
 
 ### 2. 內建 whisper.cpp 原生時間軸 + VAD 管線　`feat/builtin-native-token-timeline`
 
