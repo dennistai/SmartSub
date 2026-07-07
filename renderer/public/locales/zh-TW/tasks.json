@@ -1,0 +1,143 @@
+{
+  "pageTitle": {
+    "generate-translate": "影片 → 雙語字幕",
+    "generate": "影片 → 原文字幕",
+    "translate": "翻譯既有字幕"
+  },
+  "backToLaunchpad": "返回任務選擇",
+  "newTaskHint": "新任務 · 匯入檔案後自動儲存到最近任務",
+  "renameTask": "重新命名任務",
+  "configBar": {
+    "model": "語音模型",
+    "sourceLanguage": "影片語言",
+    "subtitleSourceLanguage": "來源語言",
+    "targetLanguage": "翻譯成",
+    "provider": "翻譯服務",
+    "style": "輸出內容",
+    "format": "字幕格式"
+  },
+  "notConfigured": "（未設定）",
+  "providerGroup": {
+    "configured": "已設定",
+    "notConfigured": "其它（未設定）"
+  },
+  "skippedDuplicates": "已跳過 {{count}} 個重複檔案",
+  "goDownloadModel": "去下載模型",
+  "goConfigureProvider": "去設定翻譯服務",
+  "advanced": "進階選項",
+  "advancedDesc": "不常改的細節設定，預設值即最佳實務",
+  "outcome": {
+    "label": "字幕效果",
+    "recommended": "推薦",
+    "accurate": {
+      "title": "文字最準",
+      "desc": "斷句最細、標點最完整，盡量保留每句話的原貌；靜音/背景音處偶爾會多出一兩條字幕。",
+      "scene": "適合講座、訪談、口播等以文字內容為主、追求最完整文本的影片"
+    },
+    "balanced": {
+      "title": "均衡",
+      "desc": "文字完整又乾淨、時間軸穩，靜音處的多餘字幕基本消除；多數影片的穩妥之選。",
+      "scene": "適合大多數影片，拿不準就選它"
+    },
+    "clean": {
+      "title": "最乾淨最穩",
+      "desc": "最大力度抑制重複與幻覺字幕、文本最克制；可能捨棄少量含糊語句。",
+      "scene": "適合長影片，或含音樂 / 掌聲 / 長靜音的素材"
+    },
+    "custom": {
+      "title": "自訂",
+      "desc": "手動調整上下文長度、VAD、抗重複等底層參數。",
+      "sectionTitle": "自訂參數",
+      "sherpaNote": "目前引擎（FunASR / Qwen / FireRed）的 VAD 為結構性常開，且無「上下文長度 / 抗重複」概念。如需細調 VAD 靈敏度，請到「設定」頁調整。"
+    },
+    "compare": {
+      "toggle": "看看不同效果的字幕差異",
+      "caption": "同一段語音（結尾帶一小段靜音）在不同檔位下的大致呈現：",
+      "accurate": "今天，我們來講一下這個新功能。謝謝觀看。",
+      "balanced": "今天我們來講一下這個新功能。",
+      "clean": "今天我們來講一下這個新功能"
+    }
+  },
+  "section": {
+    "recognition": "轉寫",
+    "output": "輸出與儲存",
+    "execution": "執行"
+  },
+  "vad": {
+    "label": "語音活動偵測（VAD）",
+    "on": "更快更穩：內建 whisper 引擎只在偵測到的語音段內辨識，自動跳過靜音/背景音，明顯減少該處的重複或幻覺字幕；字幕依 token 對齊到語音段，時間軸貼合語音、較穩。",
+    "off": "文本最完整：內建 whisper 引擎分段更細、標點更全（短 / 中文檔案、中文推薦）；靜音處的多餘字幕由能量兜底壓低；faster-whisper 等其他引擎在靜音/音樂處仍可能出現重複或幻覺字幕。",
+    "hint": "想要最完整文本、最細分段時可關閉；想要最穩時間軸、靜音處最少雜字時建議開啟。此為全域設定，對所有任務生效。"
+  },
+  "reduceRepetition": {
+    "label": "減少重複 / 幻覺字幕",
+    "on": "已開啟：斷開上文條件並抑制重複，顯著減少靜音/重複段的循環字幕；乾淨語音的連貫性可能略降。",
+    "off": "已關閉：使用引擎預設（保留上文連貫性）；長影片或靜音處可能出現重複或幻覺字幕。",
+    "hint": "遇到字幕大段重複/鬼畜時開啟。全域設定，對 faster-whisper 與 whisper.cpp 同時生效。"
+  },
+  "chinesePunctuation": {
+    "label": "中文字幕去標點",
+    "hint": "把中文字幕裡的中文標點（，。、？！等）替換為空格並去掉行尾空格，讓字幕更清爽。來源語言為中文時作用於來源字幕，目標為中文時作用於譯文。"
+  },
+  "annotateMixedSourceLanguage": {
+    "label": "混合語言標註原始語言",
+    "hint": "錄音夾雜中文/泰文/英文時，統一輸出繁體中文：中文直接歸一為繁體，英文與泰文翻成繁體並在譯文下方另起一行標註原始語言（泰文走兩段式 泰文→英文→繁體中文）。開啟時目標固定為繁體中文，建議搭配 LLM 供應商。"
+  },
+  "multiLanguageTranscription": {
+    "label": "多語言錄音（自動分段辨識語言）",
+    "hint": "錄音夾雜中文/泰文/英文時開啟：把音訊切成短段、逐段自動辨識語言各自轉錄，救回單次轉錄會漏掉的語言（如泰文）。建議與「混合語言標註原始語言」搭配使用。轉錄時間約為單次的 1 倍；語音交錯重疊的片段仍可能誤判。"
+  },
+  "stage": {
+    "extract": "提取",
+    "transcribe": "轉寫",
+    "translate": "翻譯"
+  },
+  "row": {
+    "cancelling": "取消中…正在中斷轉寫",
+    "proofread": "校對",
+    "openFolder": "開啟所在資料夾",
+    "retry": "重試",
+    "remove": "移除",
+    "embeddedSubtitle": "內嵌軟字幕直提（已跳過聽寫/ASR）",
+    "proofreadTxtUnsupported": "TXT 檔案不包含時間軸，暫不支援校對。請產生 SRT/VTT/ASS 後校對，或校對完成後另存為 TXT。",
+    "proofreadTxtUnsupportedShort": "TXT 不支援校對"
+  },
+  "waiting": "等待中",
+  "interrupted": "上次執行被中斷，點選重試繼續",
+  "completion": {
+    "title": "{{done}} 個檔案已完成",
+    "sampleTitle": "範例完成，你的第一份字幕已就緒！",
+    "sampleHint": "可以去校對看看效果，或返回啟動台開始處理自己的檔案",
+    "backHome": "返回啟動台",
+    "failed": "{{failed}} 個失敗",
+    "goProofread": "去校對",
+    "goMerge": "合成到影片",
+    "openFolder": "開啟資料夾",
+    "retryFailed": "重試失敗項",
+    "allFailedTitle": "全部 {{failed}} 個檔案處理失敗",
+    "dismiss": "關閉"
+  },
+  "logs": {
+    "title": "執行日誌（本任務）",
+    "clear": "清空",
+    "empty": "暫無日誌"
+  },
+  "empty": {
+    "dragMedia": "拖曳媒體檔案或資料夾到這裡，或點選上傳",
+    "dragSubtitle": "拖曳字幕檔案或資料夾到這裡，或點選上傳",
+    "mediaFormats": "支援 MP4 / MKV / MOV / MP3 / WAV 等 29 種常見影片與音訊格式",
+    "subtitleFormats": "支援 SRT / VTT / ASS / SSA / LRC 字幕"
+  },
+  "import": "匯入",
+  "clearList": "清空清單",
+  "taskCount": "{{count}} 個任務",
+  "view": {
+    "list": "清單檢視",
+    "grid": "格線檢視"
+  },
+  "listCleared": "已清空檔案清單",
+  "meta": {
+    "etaMin": "剩約 {{min}} 分",
+    "etaLessMin": "即將完成"
+  }
+}

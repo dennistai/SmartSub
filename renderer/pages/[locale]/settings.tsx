@@ -543,6 +543,9 @@ const Settings = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="zh">{t('chinese')}</SelectItem>
+                  <SelectItem value="zh-TW">
+                    {t('chineseTraditional')}
+                  </SelectItem>
                   <SelectItem value="en">{t('english')}</SelectItem>
                 </SelectContent>
               </Select>

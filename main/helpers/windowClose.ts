@@ -3,7 +3,7 @@ import { store } from './store';
 import { getTranscriptionBusyCount } from './taskProcessor';
 import { decideCloseIntent, type CloseAction } from './windowCloseDecision';
 
-type DialogLanguage = 'zh' | 'en';
+type DialogLanguage = 'zh' | 'zh-TW' | 'en';
 
 /** Cmd+Q / 菜单退出 / 我们主动退出时置位：区分「关窗」与「真退出」 */
 let isQuitting = false;
@@ -33,6 +33,21 @@ const LABELS: Record<DialogLanguage, Record<string, string>> = {
     quitConfirm: '退出',
     cancel: '取消',
   },
+  'zh-TW': {
+    bgTitle: '應用程式仍在背景執行',
+    bgDetailBusy:
+      '仍在背景處理 %d 個任務。要徹底結束，請用 Cmd+Q 或右鍵點選 Dock 圖示 → 結束。',
+    bgDetailIdle:
+      '應用程式將繼續在背景執行。要徹底結束，請用 Cmd+Q 或右鍵點選 Dock 圖示 → 結束。',
+    bgBackground: '轉入背景',
+    bgQuitNow: '立即結束',
+    dontShowAgain: '不再提示',
+    quitTitle: '仍有任務在執行',
+    quitDetailBusy:
+      '目前還有 %d 個任務正在處理，結束會中斷它們。確定要結束嗎？',
+    quitConfirm: '結束',
+    cancel: '取消',
+  },
   en: {
     bgTitle: 'App keeps running in the background',
     bgDetailBusy:
@@ -52,10 +67,18 @@ const LABELS: Record<DialogLanguage, Record<string, string>> = {
 
 function resolveLanguage(): DialogLanguage {
   const settings = store.get('settings') as { language?: string } | undefined;
-  if (settings?.language === 'zh' || settings?.language === 'en') {
+  if (
+    settings?.language === 'zh' ||
+    settings?.language === 'zh-TW' ||
+    settings?.language === 'en'
+  ) {
     return settings.language;
   }
-  return app.getLocale().toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  const sysLocale = app.getLocale().toLowerCase();
+  if (sysLocale.startsWith('zh-tw') || sysLocale.startsWith('zh-hant')) {
+    return 'zh-TW';
+  }
+  return sysLocale.startsWith('zh') ? 'zh' : 'en';
 }
 
 function resolveCloseAction(): CloseAction {
