@@ -2,7 +2,7 @@ import { app, BrowserWindow, Menu, shell } from 'electron';
 import { store } from './store';
 import { APP_DISPLAY_NAME } from './appBranding';
 
-type MenuLanguage = 'zh' | 'en';
+type MenuLanguage = 'zh' | 'zh-TW' | 'en';
 
 /**
  * 应用菜单本地化字典。
@@ -38,6 +38,36 @@ const LABELS: Record<MenuLanguage, Record<string, string>> = {
     openLogs: '查看日志',
     github: 'GitHub 仓库',
     reportIssue: '反馈问题',
+  },
+  'zh-TW': {
+    about: '關於 %s',
+    hide: '隱藏 %s',
+    hideOthers: '隱藏其他',
+    unhide: '全部顯示',
+    quit: '結束 %s',
+    file: '檔案',
+    edit: '編輯',
+    undo: '復原',
+    redo: '重做',
+    cut: '剪下',
+    copy: '複製',
+    paste: '貼上',
+    selectAll: '全選',
+    view: '檢視',
+    reload: '重新載入',
+    toggleDevTools: '開發者工具',
+    resetZoom: '實際大小',
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    togglefullscreen: '切換全螢幕',
+    window: '視窗',
+    minimize: '最小化',
+    close: '關閉視窗',
+    help: '說明',
+    checkUpdates: '檢查更新…',
+    openLogs: '檢視日誌',
+    github: 'GitHub 儲存庫',
+    reportIssue: '回報問題',
   },
   en: {
     about: 'About %s',
@@ -77,10 +107,18 @@ let mainWindowRef: BrowserWindow | null = null;
 
 function resolveLanguage(): MenuLanguage {
   const settings = store.get('settings') as { language?: string } | undefined;
-  if (settings?.language === 'zh' || settings?.language === 'en') {
+  if (
+    settings?.language === 'zh' ||
+    settings?.language === 'zh-TW' ||
+    settings?.language === 'en'
+  ) {
     return settings.language;
   }
-  return app.getLocale().toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  const sysLocale = app.getLocale().toLowerCase();
+  if (sysLocale.startsWith('zh-tw') || sysLocale.startsWith('zh-hant')) {
+    return 'zh-TW';
+  }
+  return sysLocale.startsWith('zh') ? 'zh' : 'en';
 }
 
 /** 发事件给 renderer 前确保窗口可见（菜单可能在窗口隐藏时触发） */
@@ -190,6 +228,8 @@ export function setupAppMenu(mainWindow: BrowserWindow) {
 /** 语言切换后重建菜单（由 setSettings 拦截调用） */
 export function rebuildAppMenu(language?: string) {
   buildAppMenu(
-    language === 'zh' || language === 'en' ? language : resolveLanguage(),
+    language === 'zh' || language === 'zh-TW' || language === 'en'
+      ? language
+      : resolveLanguage(),
   );
 }

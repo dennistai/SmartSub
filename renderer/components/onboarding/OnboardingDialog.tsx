@@ -91,7 +91,8 @@ function FlowNode({
 
 /** 引导内的语言切换项（语言名用本地写法，方便不识别当前界面语言的新用户辨认）。 */
 const ONBOARDING_LANGS = [
-  { value: 'zh', label: '中文' },
+  { value: 'zh', label: '简体' },
+  { value: 'zh-TW', label: '繁體' },
   { value: 'en', label: 'English' },
 ];
 
@@ -104,9 +105,13 @@ const OnboardingDialog: React.FC<OnboardingDialogProps> = ({
   const { t, i18n } = useTranslation('common');
   const router = useRouter();
   const { locale } = router.query;
-  const currentLang = (i18n.language || '').toLowerCase().startsWith('zh')
-    ? 'zh'
-    : 'en';
+  const lowerLang = (i18n.language || '').toLowerCase();
+  const currentLang =
+    lowerLang.startsWith('zh-tw') || lowerLang.startsWith('zh-hant')
+      ? 'zh-TW'
+      : lowerLang.startsWith('zh')
+        ? 'zh'
+        : 'en';
 
   /**
    * 引导内切换界面语言：持久化到设置，并只替换当前路由的 locale 段（保留页面与查询），

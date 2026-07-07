@@ -79,6 +79,14 @@
     "label": "Strip Chinese punctuation",
     "hint": "Replace Chinese punctuation (，。、？！ etc.) in Chinese subtitles with spaces and trim trailing spaces for cleaner subtitles. Applies to the source when the source language is Chinese, and to the translation when the target is Chinese."
   },
+  "annotateMixedSourceLanguage": {
+    "label": "Annotate mixed source languages",
+    "hint": "For recordings mixing Chinese/Thai/English, output unified Traditional Chinese: Chinese is normalized to Traditional, while English and Thai are translated to Traditional Chinese with the original language annotated on a new line below (Thai uses a two-stage Thai→English→Traditional Chinese). When on, the target is fixed to Traditional Chinese; an LLM provider is recommended."
+  },
+  "multiLanguageTranscription": {
+    "label": "Multilingual audio (auto per-segment language)",
+    "hint": "Enable for recordings mixing Chinese/Thai/English: the audio is split into short segments, each transcribed with auto language detection, recovering languages a single pass would miss (e.g. Thai). Best paired with \"Annotate mixed source languages\". Transcription takes about 1x longer; overlapping crosstalk segments may still be misdetected."
+  },
   "stage": {
     "extract": "Extract",
     "transcribe": "Transcribe",

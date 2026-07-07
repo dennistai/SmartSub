@@ -1,0 +1,124 @@
+{
+  "title": "自訂參數",
+  "subtitle": "為此供應商設定自訂標頭與請求主體參數",
+  "actions": {
+    "export": "匯出",
+    "import": "匯入",
+    "refresh": "重新整理",
+    "addParameter": "新增參數",
+    "duplicate": "複製",
+    "cancel": "取消"
+  },
+  "tabs": {
+    "headers": "請求標頭",
+    "bodyParameters": "請求主體參數"
+  },
+  "headers": {
+    "title": "HTTP 請求標頭",
+    "description": "隨 API 請求傳送的自訂標頭（例如：身分驗證、API 版本控制）"
+  },
+  "bodyParameters": {
+    "title": "請求主體參數",
+    "description": "包含在 API 請求主體中的自訂參數（例如：模型設定、行為控制）"
+  },
+  "search": {
+    "placeholder": "搜尋參數..."
+  },
+  "more": {
+    "label": "更多",
+    "search": "搜尋參數",
+    "import": "匯入 JSON",
+    "export": "匯出 JSON",
+    "refresh": "從磁碟重新整理"
+  },
+  "addDialog": {
+    "title": "新增參數",
+    "description": "為此供應商建立新的自訂參數。",
+    "fields": {
+      "key": "參數鍵",
+      "category": "類別",
+      "type": "類型",
+      "initialValue": "初始值"
+    },
+    "placeholders": {
+      "key": "例如：temperature, max_tokens",
+      "initialValue": "輸入初始值"
+    },
+    "tooltips": {
+      "initialValue": "新參數的初始值"
+    }
+  },
+  "types": {
+    "string": "字串",
+    "integer": "整數",
+    "float": "浮點數",
+    "boolean": "布林值",
+    "array": "陣列"
+  },
+  "table": {
+    "keyColumn": "參數名稱",
+    "valueColumn": "值",
+    "typeColumn": "類型",
+    "actionColumn": "操作",
+    "keyPlaceholder": "例如 temperature",
+    "valuePlaceholder": "例如 0.3",
+    "stringPlaceholder": "例如 hello",
+    "numberPlaceholder": "例如 0.3",
+    "arrayPlaceholder": "[1, 2, 3]",
+    "arrayHint": "JSON 陣列格式，例如 [1, 2, 3] 或 [\"a\", \"b\"]",
+    "booleanHint": "開關表示 true / false",
+    "duplicateKey": "該參數名稱已存在",
+    "emptyKey": "請填寫參數名稱",
+    "addRowLabel": "新參數",
+    "addButton": "新增",
+    "addHint": "在下方「新參數」列填寫參數名稱、類型和值，點選「新增」或按 Enter 可連續新增多筆。",
+    "delete": "刪除"
+  },
+  "categories": {
+    "headers": "請求標頭",
+    "body": "請求主體"
+  },
+  "status": {
+    "saving": "儲存中...",
+    "saved": "已儲存",
+    "error": "錯誤",
+    "upToDate": "已是最新",
+    "unsavedChanges": "有未儲存的變更",
+    "savedAutomatically": "自動儲存成功",
+    "saveFailed": "儲存失敗"
+  },
+  "summary": {
+    "title": "設定摘要",
+    "totalParameters": "參數總數：",
+    "headers": "請求標頭：",
+    "bodyParameters": "請求主體參數：",
+    "validationErrors": "驗證錯誤：",
+    "saveStatus": "儲存狀態：",
+    "lastSaved": "最後儲存："
+  },
+  "validation": {
+    "valid": "有效",
+    "invalidJson": "無效的 JSON：{message}",
+    "notArray": "值必須是 JSON 陣列，例如 [1, 2, 3]"
+  },
+  "placeholders": {
+    "enterValue": "輸入 {key}",
+    "jsonArray": "[]",
+    "itemNumber": "項目 {number}"
+  },
+  "arrayEditor": {
+    "addItem": "新增項目",
+    "jsonArrayEditor": "JSON 陣列編輯器"
+  },
+  "emptyStates": {
+    "noHeadersSearch": "沒有符合搜尋的請求標頭。",
+    "noHeadersConfigured": "未設定自訂請求標頭。",
+    "noBodyParamsSearch": "沒有符合搜尋的請求主體參數。",
+    "noBodyParamsConfigured": "未設定自訂請求主體參數。"
+  },
+  "unsavedChangesDialog": {
+    "title": "未儲存的變更",
+    "description": "您有未儲存的變更，重新整理後將遺失。變更正在自動儲存中，但現在重新整理將捨棄任何最近的修改。",
+    "refreshAnyway": "仍然重新整理"
+  }
+}

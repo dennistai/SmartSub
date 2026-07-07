@@ -162,6 +162,63 @@ export async function extractAudioFromVideo(event, file) {
 }
 
 /**
+ * 依时间区间从源媒体切出 16kHz 单声道 pcm_s16le WAV 片段（多语言分段转录用）。
+ * 复用 extractAudio 的取消骨架：注册到 runningCommands，取消时被 killFfmpegForFiles 终止。
+ * 片段短、调用密集，刻意不做进度/时长探测，只保留完成/错误/取消三态。
+ */
+export const extractAudioSegment = (
+  srcPath: string,
+  startSec: number,
+  durSec: number,
+  outWav: string,
+): Promise<void> => {
+  const taskContext = getTaskContext();
+  const fileUuid = taskContext?.fileUuid;
+  const signal = taskContext?.signal;
+  const unregister = () => {
+    if (fileUuid) runningCommands.delete(fileUuid);
+  };
+  return new Promise<void>((resolve, reject) => {
+    try {
+      const command = ffmpeg(`${srcPath}`)
+        .seekInput(startSec)
+        .duration(durSec)
+        .audioFrequency(16000)
+        .audioChannels(1)
+        .audioCodec('pcm_s16le')
+        .outputOptions('-y')
+        .on('end', () => {
+          unregister();
+          resolve();
+        })
+        .on('error', (err) => {
+          unregister();
+          if (signal?.aborted) {
+            try {
+              if (fs.existsSync(outWav)) fs.unlinkSync(outWav);
+            } catch (cleanupErr) {
+              logMessage(
+                `cleanup partial segment failed: ${cleanupErr}`,
+                'warning',
+              );
+            }
+            reject(new TaskCancelledError());
+            return;
+          }
+          logMessage(`extract audio segment error: ${err}`, 'error');
+          reject(err);
+        });
+      // 顺序调用：同一 fileUuid 同时至多一个片段在跑，覆盖注册可被取消 kill
+      if (fileUuid) runningCommands.set(fileUuid, command);
+      command.save(`${outWav}`);
+    } catch (err) {
+      unregister();
+      reject(err);
+    }
+  });
+};
+
+/**
  * 探测视频内封字幕流：spawn 内置 ffmpeg `-i` 解析 stderr，永不 reject。
  * ffmpeg 因无输出文件以非零码退出属正常，照常解析 stderr。带超时保护。
  */
