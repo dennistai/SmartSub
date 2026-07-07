@@ -12,7 +12,8 @@ export type ChineseScript = 'simplified' | 'traditional';
 type ConvertFn = (text: string) => string;
 
 let t2sConverter: ConvertFn | null = null;
-let s2tConverter: ConvertFn | null = null;
+let s2twConverter: ConvertFn | null = null;
+let s2twpConverter: ConvertFn | null = null;
 
 /** 繁（OpenCC 标准）→ 简（大陆）。惰性创建并缓存。 */
 function getT2S(): ConvertFn {
@@ -20,10 +21,16 @@ function getT2S(): ConvertFn {
   return t2sConverter;
 }
 
-/** 简（大陆）→ 繁（OpenCC 标准）。惰性创建并缓存。 */
-function getS2T(): ConvertFn {
-  if (!s2tConverter) s2tConverter = Converter({ from: 'cn', to: 't' });
-  return s2tConverter;
+/** 简（大陆）→ 繁（台湾字形，不转用词）。惰性创建并缓存。 */
+function getS2TW(): ConvertFn {
+  if (!s2twConverter) s2twConverter = Converter({ from: 'cn', to: 'tw' });
+  return s2twConverter;
+}
+
+/** 简（大陆）→ 繁（台湾字形 + 台湾用词）。惰性创建并缓存。 */
+function getS2TWP(): ConvertFn {
+  if (!s2twpConverter) s2twpConverter = Converter({ from: 'cn', to: 'twp' });
+  return s2twpConverter;
 }
 
 /**
@@ -42,6 +49,11 @@ export function getDesiredChineseScript(lang?: string): ChineseScript | null {
   return 'simplified';
 }
 
+export interface ConvertChineseOptions {
+  /** 目标为繁体时是否套用台湾用词转换（s2twp）；否则只转字形（s2tw）。默认 false。 */
+  taiwanPhrase?: boolean;
+}
+
 /**
  * 按期望字形转换文本；仅当结果与原文不同（即检测到相反字形）时标记 converted。
  * 对 SRT 全文安全：序号/时间码/`-->` 均为 ASCII，OpenCC 不会改动。
@@ -49,11 +61,59 @@ export function getDesiredChineseScript(lang?: string): ChineseScript | null {
 export function convertChineseText(
   text: string,
   desired: ChineseScript,
+  opts?: ConvertChineseOptions,
 ): { text: string; converted: boolean } {
   if (!text) return { text, converted: false };
-  const convert = desired === 'simplified' ? getT2S() : getS2T();
+  const convert =
+    desired === 'simplified'
+      ? getT2S()
+      : opts?.taiwanPhrase
+        ? getS2TWP()
+        : getS2TW();
   const out = convert(text);
   return { text: out, converted: out !== text };
+}
+
+/** 统计两串对应位置不同的字数；长度不同时以「长度差 + 公共区差异」保守计数。 */
+function countChangedChars(a: string, b: string): number {
+  if (a === b) return 0;
+  const len = Math.min(a.length, b.length);
+  let diff = Math.abs(a.length - b.length);
+  for (let i = 0; i < len; i++) {
+    if (a[i] !== b[i]) diff++;
+  }
+  return diff;
+}
+
+/**
+ * 侦测文本主体中文字形（与转写模型解耦，以实际输出为准）。
+ * 用字形级两向转换各自「改动字数」比较：
+ *  - simplifiedSignal：s2tw 会改动的字数（= 简体专用字）
+ *  - traditionalSignal：t2s 会改动的字数（= 繁体专用字）
+ * 皆为 0 → 'unknown'（无可辨识中文字）。tie-break 偏繁：
+ * 唯有 simplifiedSignal > traditionalSignal 才判 'simplified'。
+ */
+export function detectChineseScript(text: string): ChineseScript | 'unknown' {
+  if (!text) return 'unknown';
+  const simplifiedSignal = countChangedChars(text, getS2TW()(text));
+  const traditionalSignal = countChangedChars(text, getT2S()(text));
+  if (simplifiedSignal === 0 && traditionalSignal === 0) return 'unknown';
+  return simplifiedSignal > traditionalSignal ? 'simplified' : 'traditional';
+}
+
+/**
+ * 结合全局设定解析目标字形：
+ *  - 来源非中文 → null（不处理）
+ *  - 来源中文 + alwaysTraditional → 一律 'traditional'
+ *  - 来源中文 + !alwaysTraditional → 沿用 getDesiredChineseScript(sourceLanguage)
+ */
+export function resolveDesiredChineseScript(
+  sourceLanguage: string | undefined,
+  alwaysTraditional: boolean,
+): ChineseScript | null {
+  const base = getDesiredChineseScript(sourceLanguage);
+  if (base !== null && alwaysTraditional) return 'traditional';
+  return base;
 }
 
 /**

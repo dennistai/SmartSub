@@ -16,7 +16,7 @@ import {
   TRANSLATOR_MAP,
 } from './services/translationProvider';
 import { getSrtFileName } from '../helpers/utils';
-import { logMessage } from '../helpers/storeManager';
+import { logMessage, store } from '../helpers/storeManager';
 import { IFiles, IFormData } from '../../types';
 import { ensureTempDir } from '../helpers/fileUtils';
 import { isTaskCancelledError } from '../helpers/taskContext';
@@ -79,11 +79,13 @@ export default async function translate(
   const desiredTargetScript = getDesiredChineseScript(targetLanguage);
   const isChineseTarget = desiredTargetScript !== null;
   const removePunctuation = resolveRemoveChinesePunctuation(formData);
+  // 译文台湾用词开关：与 ASR 源字幕一致（全局设置 openccPhraseConversion，默认关）
+  const taiwanPhrase = store.get('settings')?.openccPhraseConversion === true;
   const postProcessTarget = (content: string): string => {
     if (!content) return content;
     let out = content;
     if (desiredTargetScript) {
-      out = convertChineseText(out, desiredTargetScript).text;
+      out = convertChineseText(out, desiredTargetScript, { taiwanPhrase }).text;
     }
     if (removePunctuation && isChineseTarget) {
       out = removeChineseSubtitlePunctuation(out);
