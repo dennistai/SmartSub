@@ -19,6 +19,10 @@ import {
 } from '../main/helpers/engines/transcribeShared';
 import { toFasterWhisperModel } from '../main/helpers/engines/modelMap';
 import {
+  resolveModelForLanguage,
+  DEFAULT_LANGUAGE_MODEL_ROUTES,
+} from '../main/helpers/engines/languageModelRouting';
+import {
   isProtocolSupported,
   isRemoteProtocolInstallable,
   SUPPORTED_PROTOCOL_MAX,
@@ -128,6 +132,57 @@ eq(getNumericSetting(0, 1), 0, 'num: zero is valid');
 eq(getNumericSetting(undefined, 1), 1, 'num: undefined -> default');
 eq(getNumericSetting(NaN, 1), 1, 'num: NaN -> default');
 eq(getNumericSetting('x', 1), 1, 'num: string -> default');
+
+// --- resolveModelForLanguage（依语言路由模型）---
+{
+  const installed = ['breeze-asr-25', 'large-v3-turbo', 'medium'];
+  // 命中路由且已安装：zh → Breeze、th/en → turbo
+  eq(
+    resolveModelForLanguage('zh', 'large-v3-turbo', installed),
+    'breeze-asr-25',
+    'route: zh -> breeze',
+  );
+  eq(
+    resolveModelForLanguage('th', 'breeze-asr-25', installed),
+    'large-v3-turbo',
+    'route: th -> turbo (away from breeze base)',
+  );
+  eq(
+    resolveModelForLanguage('en', 'breeze-asr-25', installed),
+    'large-v3-turbo',
+    'route: en -> turbo',
+  );
+  // 路由目标未安装 → 回退基础模型（优雅降级）
+  eq(
+    resolveModelForLanguage('zh', 'medium', ['medium', 'large-v3-turbo']),
+    'medium',
+    'route: zh but breeze not installed -> base',
+  );
+  // lang=null（LID 不可用）→ 基础模型
+  eq(
+    resolveModelForLanguage(null, 'medium', installed),
+    'medium',
+    'route: null lang -> base',
+  );
+  // 大小写不敏感匹配：installed 大小写不同仍命中，回传路由表的规范名（与 ggml 档名一致）
+  eq(
+    resolveModelForLanguage('zh', 'large-v3-turbo', ['BREEZE-ASR-25']),
+    'breeze-asr-25',
+    'route: case-insensitive installed match -> canonical name',
+  );
+  // 空路由表 → 基础模型
+  eq(
+    resolveModelForLanguage('zh', 'medium', installed, {}),
+    'medium',
+    'route: empty routes -> base',
+  );
+  // 默认表含三语键
+  eq(
+    Object.keys(DEFAULT_LANGUAGE_MODEL_ROUTES).sort(),
+    ['en', 'th', 'zh'],
+    'route: default table has zh/en/th',
+  );
+}
 
 // --- getVadSettings ---
 eq(

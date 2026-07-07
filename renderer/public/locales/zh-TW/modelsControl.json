@@ -81,6 +81,7 @@
   "unknownError": "未知錯誤",
   "detectingHardware": "正在偵測本機配置…",
   "modelDesc": {
+    "breeze-asr-25": "聯發科 Breeze，台灣腔中文與中英夾雜最佳；泰語未最佳化",
     "tiny": "最快出結果，準確度一般",
     "base": "比 tiny 準一些，依然很快",
     "small": "速度與準確度的入門平衡點",
