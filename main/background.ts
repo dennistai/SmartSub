@@ -128,7 +128,20 @@ app.on('before-quit', (event) => {
   }
 
   const settings = store.get('settings');
-  const userLanguage = settings?.language || 'zh'; // 默认为中文
+  // 首启无持久化语言时：系统为繁体中文（zh-TW / zh-Hant / zh-HK / zh-MO）默认繁体，否则简体
+  const detectDefaultLanguage = (): string => {
+    const sys = app.getLocale().toLowerCase();
+    if (
+      sys.startsWith('zh-tw') ||
+      sys.startsWith('zh-hant') ||
+      sys.startsWith('zh-hk') ||
+      sys.startsWith('zh-mo')
+    ) {
+      return 'zh-TW';
+    }
+    return 'zh';
+  };
+  const userLanguage = settings?.language || detectDefaultLanguage();
 
   const mainWindow = createWindow('main', {
     width: 1280,
