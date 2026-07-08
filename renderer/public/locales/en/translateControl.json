@@ -1,4 +1,9 @@
 {
+  "applyPromptPreset": "Apply preset",
+  "promptPreset": {
+    "default": "General translation",
+    "multilingualToTraditional": "Multilingual meeting → Traditional Chinese"
+  },
   "translateControl": "Translation Control",
   "translationServices": "Translation Services",
   "providerListTitle": "Providers",

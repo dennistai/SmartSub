@@ -36,6 +36,7 @@ import {
   getNumericSetting,
 } from './transcribeShared';
 import { resolveEffectiveSettings } from './outcomePresets';
+import { transcribeMultilingual } from './multilingualTranscribe';
 import type { TranscribeContext, TranscriptionEngineAdapter } from './types';
 
 /**
@@ -267,6 +268,14 @@ export const builtinEngineAdapter: TranscriptionEngineAdapter = {
   },
 
   async transcribe(ctx: TranscribeContext): Promise<string> {
+    // 多语言分段转录（专用旗标）：分段逐段 auto 偵測语言，产出带语言旁路的字幕。
+    // 旗标关闭时完全走既有单次路径，零影响。
+    if (
+      (ctx.formData as { multiLanguageTranscription?: boolean })
+        ?.multiLanguageTranscription
+    ) {
+      return transcribeMultilingual(ctx);
+    }
     return transcribeBuiltin(ctx);
   },
 

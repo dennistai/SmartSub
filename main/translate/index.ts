@@ -3,7 +3,10 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Provider, TranslationResult } from './types';
 import { CONTENT_TEMPLATES } from './constants';
-import { createOrClearFile, appendToFile } from './utils/file';
+import { createOrClearFile } from './utils/file';
+import { writeTranslationResults } from './writeResults';
+import { translateMixedWithAnnotation } from './mixedLanguage';
+import { readLangMap } from '../helpers/langMapData';
 import {
   detectSubtitleFormatFromContent,
   parseSubtitleEntries,
@@ -12,7 +15,7 @@ import {
   translateWithProvider,
   TRANSLATOR_MAP,
 } from './services/translationProvider';
-import { getSrtFileName, renderTemplate } from '../helpers/utils';
+import { getSrtFileName } from '../helpers/utils';
 import { logMessage, store } from '../helpers/storeManager';
 import { IFiles, IFormData } from '../../types';
 import { ensureTempDir } from '../helpers/fileUtils';
@@ -31,6 +34,16 @@ function resolveRemoveChinesePunctuation(
   formData: IFormData | undefined,
 ): boolean {
   return formData?.removeChinesePunctuation === true;
+}
+
+/**
+ * 解析「混合语言标注」生效值：任务级专用开关。
+ * 开启后走逐条脚本路由 + 统一繁体 + 原始语言注解的独立流程。
+ */
+function resolveAnnotateMixedSourceLanguage(
+  formData: IFormData | undefined,
+): boolean {
+  return formData?.annotateMixedSourceLanguage === true;
 }
 
 export default async function translate(
@@ -150,38 +163,37 @@ export default async function translate(
     );
 
     const handleTranslationResult = async (results: TranslationResult[]) => {
-      let concatContent = '';
-      let tempTranslatedContent = '';
-
-      results.forEach(async (result) => {
-        // 目标译文后处理（简繁归一 + 可选中文标点去除）
-        const targetContent = postProcessTarget(result.targetContent);
-        // 双语内嵌源文行后处理（仅生成并翻译 + 中文源 + 开关开启时去标点）
-        const sourceContent = postProcessBilingualSource(result.sourceContent);
-
-        // 根据用户设置的模板生成目标文件内容
-        const content = `${result.id}\n${result.startEndTime}\n${renderTemplate(
-          renderContentTemplate,
-          {
-            sourceContent,
-            targetContent,
-          },
-        )}`;
-        concatContent += content;
-
-        // 对临时文件，只添加纯翻译内容
-        const pureTranslatedContent = `${result.id}\n${result.startEndTime}\n${targetContent}\n\n`;
-        tempTranslatedContent += pureTranslatedContent;
+      await writeTranslationResults({
+        results,
+        fileSave,
+        tempTranslatedFilePath,
+        renderContentTemplate,
+        postProcessTarget,
+        postProcessBilingualSource,
       });
-
-      // 保存到目标文件
-      logMessage(`append to file ${fileSave}`);
-      await appendToFile(fileSave, concatContent);
-
-      // 保存到临时纯翻译文件
-      logMessage(`append to temp file ${tempTranslatedFilePath}`);
-      await appendToFile(tempTranslatedFilePath, tempTranslatedContent);
     };
+
+    // 混合语言标注（专用开关）：逐条按脚本路由，统一输出繁体中文并标注原始语言。
+    // 走独立分支，完全不影响既有单一语向翻译路径（开关默认关闭）。
+    if (resolveAnnotateMixedSourceLanguage(formData)) {
+      // 多语言转录留下的语言旁路（id→真实偵測语言），有则优先于文字腳本猜测
+      const langMap = readLangMap(file.langMapFile);
+      await translateMixedWithAnnotation({
+        provider,
+        subtitles,
+        formData,
+        translator,
+        retryCount,
+        onProgress,
+        fileSave,
+        tempTranslatedFilePath,
+        renderContentTemplate,
+        postProcessBilingualSource,
+        langMap,
+      });
+      logMessage('Mixed-language annotated translation completed', 'info');
+      return true;
+    }
 
     await translateWithProvider(
       provider,

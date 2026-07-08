@@ -81,6 +81,7 @@
   "unknownError": "Unknown error",
   "detectingHardware": "Detecting hardware…",
   "modelDesc": {
+    "breeze-asr-25": "MediaTek Breeze — best for Taiwan Mandarin & zh-en code-switching; Thai not optimized",
     "tiny": "Fastest results, modest accuracy",
     "base": "More accurate than tiny, still fast",
     "small": "Entry-level balance of speed and accuracy",

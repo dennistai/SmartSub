@@ -242,6 +242,8 @@ export const defaultUserConfig = {
   maxSubtitleChars: 0,
   removeChinesePunctuation: false,
   exportTxtAlongside: false,
+  annotateMixedSourceLanguage: false,
+  multiLanguageTranscription: false,
 };
 
 export function getSrtFileName(

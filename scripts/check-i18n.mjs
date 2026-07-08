@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * i18n 质量门禁：
- * 1. zh/en namespace 文件集合与 key 集合必须完全对等
+ * 1. zh/en/zh-Hant namespace 文件集合与 key 集合必须完全对等（以 zh 为基准）
  * 2. 源码不允许新增 `t('key') || '兜底文案'` 模式（key 已保证存在，兜底只会掩盖缺键）
  * 退出码非 0 表示存在问题。
  */
@@ -36,27 +36,36 @@ const listJson = (loc) =>
     .sort();
 
 const zhFiles = listJson('zh');
-const enFiles = listJson('en');
+// 以 zh 为基准，逐一校验其它语言的 namespace 与 key 对等
+const targetLocales = ['en', 'zh-Hant'];
 
-for (const f of zhFiles.filter((f) => !enFiles.includes(f))) {
-  fail(`namespace 仅存在于 zh: ${f}`);
-}
-for (const f of enFiles.filter((f) => !zhFiles.includes(f))) {
-  fail(`namespace 仅存在于 en: ${f}`);
-}
+for (const loc of targetLocales) {
+  const files = listJson(loc);
 
-for (const f of zhFiles.filter((f) => enFiles.includes(f))) {
-  const zh = new Set(
-    flatten(JSON.parse(fs.readFileSync(path.join(localesDir, 'zh', f), 'utf8'))),
-  );
-  const en = new Set(
-    flatten(JSON.parse(fs.readFileSync(path.join(localesDir, 'en', f), 'utf8'))),
-  );
-  for (const k of zh) {
-    if (!en.has(k)) fail(`${f} 缺 en key: ${k}`);
+  for (const f of zhFiles.filter((f) => !files.includes(f))) {
+    fail(`namespace 仅存在于 zh，${loc} 缺失: ${f}`);
   }
-  for (const k of en) {
-    if (!zh.has(k)) fail(`${f} 缺 zh key: ${k}`);
+  for (const f of files.filter((f) => !zhFiles.includes(f))) {
+    fail(`namespace 仅存在于 ${loc}: ${f}`);
+  }
+
+  for (const f of zhFiles.filter((f) => files.includes(f))) {
+    const zh = new Set(
+      flatten(
+        JSON.parse(fs.readFileSync(path.join(localesDir, 'zh', f), 'utf8')),
+      ),
+    );
+    const target = new Set(
+      flatten(
+        JSON.parse(fs.readFileSync(path.join(localesDir, loc, f), 'utf8')),
+      ),
+    );
+    for (const k of zh) {
+      if (!target.has(k)) fail(`${f} 缺 ${loc} key: ${k}`);
+    }
+    for (const k of target) {
+      if (!zh.has(k)) fail(`${f} 缺 zh key（${loc} 多出）: ${k}`);
+    }
   }
 }
 
@@ -87,4 +96,6 @@ for (const dir of srcDirs) {
 if (failed) {
   process.exit(1);
 }
-console.log('✓ i18n check passed: zh/en key parity OK, no fallback patterns');
+console.log(
+  '✓ i18n check passed: zh/en/zh-Hant key parity OK, no fallback patterns',
+);

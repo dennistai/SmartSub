@@ -19,7 +19,11 @@
       "name": "whisper.cpp（內置）",
       "desc": "默認引擎，支持 ggml 量化模型與 GPU 加速；蘋果芯片（M 系列）有專屬優化、速度更快，電腦配置老舊或內存偏小時也能輕量流暢運行、不卡頓。",
       "scenario": "適合：Mac / 老舊設備 / 離線通用轉寫",
-      "tags": ["Apple 芯片", "GPU 加速", "輕量"],
+      "tags": [
+        "Apple 芯片",
+        "GPU 加速",
+        "輕量"
+      ],
       "statusReady": "已就緒",
       "needsModels": "需下載模型"
     },
@@ -27,7 +31,11 @@
       "name": "faster-whisper",
       "desc": "基於 CTranslate2，速度更快，模型按需從 HuggingFace 下載；帶英偉達（NVIDIA）獨立顯卡的電腦速度最快，普通 Windows 電腦也更快。首次啓用需下載自包含運行時（已內置 Python，無需另裝）。",
       "scenario": "適合：NVIDIA 顯卡 / 追求速度與精度",
-      "tags": ["NVIDIA", "高速", "高精度"],
+      "tags": [
+        "NVIDIA",
+        "高速",
+        "高精度"
+      ],
       "notInstalled": "未安裝",
       "installError": "安裝異常",
       "installed": "已安裝",
@@ -64,7 +72,8 @@
         "recommended": "推薦",
         "noNvidia": "未檢測到 NVIDIA 顯卡，選擇後可能無法啓用 GPU 加速",
         "installedLabel": "當前運行時",
-        "switchTo": "切換到 {{target}}"
+        "switchTo": "切換到 {{target}}",
+        "parkedReady": "本地已保留該版本，可免下載即時切換"
       },
       "downloadConfirm": "將下載 faster-whisper 引擎運行時（約 170MB），是否繼續？",
       "installedVersion": "已安裝 v{{version}}",
@@ -83,7 +92,11 @@
     "sherpa": {
       "name": "本地多模型引擎",
       "subtitle": "FunASR · Qwen · FireRed",
-      "tags": ["FunASR", "Qwen3-ASR", "FireRedASR"],
+      "tags": [
+        "FunASR",
+        "Qwen3-ASR",
+        "FireRedASR"
+      ],
       "desc": "FunASR、Qwen3-ASR、FireRedASR 共用同一套 sherpa-onnx 本地運行庫（已隨應用內置），區別只在模型與少量參數。在下方按需選擇並下載對應模型即可使用，全程 CPU 離線、無需顯卡或 Python。",
       "builtinRuntime": "運行庫已隨應用內置（FunASR · Qwen · FireRed 共用），無需單獨下載。",
       "installedVersion": "內置 v{{version}}",
@@ -256,7 +269,10 @@
       "name": "本地命令行",
       "desc": "使用自行安裝的 Whisper 兼容 CLI",
       "scenario": "適合：進階用戶，自備 Whisper 命令與模型",
-      "tags": ["自定義命令", "高級"],
+      "tags": [
+        "自定義命令",
+        "高級"
+      ],
       "enable": "啓用本地命令行",
       "enableHint": "啓用後纔會在任務的「引擎 ▸ 模型」選擇器中列出本地命令行",
       "configure": "配置命令",
@@ -268,6 +284,83 @@
       "commandTooltip": "可用變量：${audioFile}, ${whisperModel}, ${srtFile}, ${sourceLanguage}, ${outputDir}。這些變量在執行時會被替換爲實際值。",
       "commandSaved": "命令已保存",
       "commandSaveFailed": "保存失敗"
+    },
+    "cloud": {
+      "notConfigured": "未配置"
+    },
+    "groups": {
+      "local": "本地引擎",
+      "cloud": "雲端聽寫"
     }
-  }
+  },
+  "cloudAsr": {
+    "intro": "轉寫時音頻會上傳到你配置的服務端點；憑據僅保存在本地。",
+    "addCustom": "添加自定義",
+    "addCustomDesc": "接入任意 OpenAI 兼容的轉寫端點（/audio/transcriptions），如自建服務或中轉站。",
+    "baseUrlOptional": "Base URL（可選，稍後也可填寫）",
+    "clearConfig": "清除配置",
+    "clearConfigTitle": "清除配置",
+    "clearConfigDesc": "將刪除「{{name}}」已保存的憑據與設置，狀態回到未配置。此操作不可撤銷。",
+    "orphanHint": "該服務商類型已不再受支持。以下爲歷史配置，僅可查看或刪除。",
+    "instanceName": "名稱",
+    "testConnection": "測試連接",
+    "testSuccess": "連接正常",
+    "testFailed": "連接失敗，請檢查 Base URL 與 API Key。",
+    "testFailedStatus": "連接失敗（HTTP {{status}}），請檢查 Base URL 與 API Key。",
+    "testNeedsConfig": "請先填寫 Base URL 與 API Key。",
+    "removeTitle": "刪除配置",
+    "removeDesc": "確定刪除雲端聽寫配置「{{name}}」？此操作不可撤銷。",
+    "modelsAddHint": "輸入模型 id，回車添加"
+  },
+  "asrApiUrlTips": "OpenAI 兼容端點的 Base URL，例如 https://api.openai.com/v1",
+  "asrApiKeyTips": "你的 API Key，僅保存在本地併發送到上面配置的端點。",
+  "asrApiKeyTips_openai": "OpenAI API Key，可在 <a href='https://platform.openai.com/api-keys' style='color: blue'>OpenAI 平臺 ▸ API keys</a> 註冊並創建。僅保存在本地併發送到上面配置的端點。",
+  "asrApiKeyTips_groq": "Groq API Key，可在 <a href='https://console.groq.com/keys' style='color: blue'>Groq 控制台 ▸ API Keys</a> 免費註冊並創建。僅保存在本地併發送到上面配置的端點。",
+  "asrApiKeyTips_siliconflow": "SiliconFlow API Key，可在 <a href='https://cloud.siliconflow.cn/account/ak' style='color: blue'>硅基流動控制台 ▸ API 密鑰</a> 註冊並創建。僅保存在本地併發送到上面配置的端點。",
+  "phAsrApiKey": "sk-...",
+  "asrModels": "模型",
+  "asrModelsTips": "輸入模型 id 後回車添加（如 whisper-1、gpt-4o-transcribe），可配置多個；轉寫時默認使用第一個。",
+  "asrRequestTimeout": "請求超時（秒）",
+  "asrRequestTimeoutTips": "每次請求失敗前最長等待的秒數。",
+  "asrConcurrency": "併發數",
+  "asrConcurrencyTips": "長音頻切片後並行請求的最大數量。",
+  "requestInterval": "請求間隔（秒）",
+  "asrRequestIntervalTips": "爲遵守限流，兩次請求之間的最小間隔秒數（0 = 不限制）。",
+  "asrElevenApiKeyTips": "ElevenLabs API Key，可在 <a href='https://elevenlabs.io/app/settings/api-keys' style='color: blue'>ElevenLabs 控制台 ▸ API Keys</a> 註冊並創建。僅保存在本地。",
+  "asrApiUrlElevenTips": "ElevenLabs 端點的 Base URL，通常留空即用官方地址 https://api.elevenlabs.io/v1（走代理時再填寫）。",
+  "asrModelsElevenTips": "點選啓用的模型，默認使用第一個已選項。scribe_v1 已廢棄（官方 2026-07 移除），建議使用 scribe_v2。",
+  "phElevenApiKey": "你的 ElevenLabs API Key",
+  "asrDeepgramApiKeyTips": "Deepgram API Key，可在 <a href='https://console.deepgram.com/' style='color: blue'>Deepgram 控制台</a> 註冊並創建，新用戶有免費額度。僅保存在本地。",
+  "asrApiUrlDeepgramTips": "Deepgram 端點的 Base URL，通常留空即用官方地址 https://api.deepgram.com/v1（走代理時再填寫）。",
+  "asrModelsDeepgramTips": "點選啓用的模型，默認使用第一個已選項：nova-2 語種覆蓋更全，nova-3 精度更高。",
+  "phDeepgramApiKey": "你的 Deepgram API Key",
+  "asrVolcApiKeyTips": "火山引擎「豆包語音」新版控制台 ▸「API Key 管理」簽發的 API Key，可在 <a href='https://console.volcengine.com/speech/app' style='color: blue'>豆包語音控制台</a> 註冊並獲取，需先在「開通管理」開通「錄音文件識別大模型-極速版」。注意：火山方舟 / 大模型推理的 API Key 不能用於豆包語音。僅保存在本地。",
+  "phVolcApiKey": "你的豆包語音 API Key",
+  "asrModelsVolcTips": "模型固定爲 bigmodel（豆包大模型錄音文件識別·極速版），不可修改。",
+  "asrApiUrlVolcTips": "火山引擎語音端點，默認 https://openspeech.bytedance.com，一般無需修改。",
+  "asrTencentAppidTips": "騰訊雲「語音識別」控制台 ▸「API 密鑰管理」中的 AppID（純數字），可在 <a href='https://console.cloud.tencent.com/cam/capi' style='color: blue'>API 密鑰管理</a> 查看；需先在 <a href='https://console.cloud.tencent.com/asr' style='color: blue'>語音識別控制台</a> 註冊開通「錄音文件識別極速版」，每月贈送 5 小時免費額度。僅保存在本地。",
+  "phTencentAppid": "1300000000",
+  "asrTencentSecretIdTips": "騰訊雲 API 密鑰的 SecretId，與 AppID 同頁獲取。僅保存在本地。",
+  "phTencentSecretId": "AKID...",
+  "asrTencentSecretKeyTips": "騰訊雲 API 密鑰的 SecretKey。若報鑑權失敗（code 4002），請檢查密鑰是否正確、本機系統時間是否準確（與服務器偏差超過 3 分鐘會導致簽名失敗）。僅保存在本地。",
+  "phTencentSecretKey": "你的 SecretKey",
+  "asrModelsTencentTips": "識別語言自動跟隨任務的「原語言」選擇，這裏只選計費檔位：standard（普通版）按原語言使用單語種引擎，免費併發 20；large（大模型版）識別更強但單價更高，中英粵走 16k_zh_en、其餘語種走 16k_multi_lang，免費併發僅 5。原語言選「自動識別」時按中英粵混合引擎處理，其它語種請在任務裏明確選擇原語言。",
+  "asrAliyunAccessKeyIdTips": "阿里雲 <a href='https://ram.console.aliyun.com/manage/ak' style='color: blue'>RAM 訪問控制 ▸「AccessKey」</a> 創建的 AccessKey ID。注意：錄音文件識別極速版僅提供商用版（無免費試用），需先在 <a href='https://nls-portal.console.aliyun.com/' style='color: blue'>智能語音交互控制台</a> 開通商用版，開通後按識別時長計費。僅保存在本地。",
+  "phAliyunAccessKeyId": "LTAI...",
+  "asrAliyunAccessKeySecretTips": "與 AccessKey ID 配對的 AccessKey Secret（僅創建時可見，請妥善保存）。用於獲取臨時訪問令牌，僅保存在本地。",
+  "phAliyunAccessKeySecret": "你的 AccessKey Secret",
+  "asrAliyunAppkeyTips": "<a href='https://nls-portal.console.aliyun.com/' style='color: blue'>智能語音交互控制台</a> ▸「全部項目」創建項目後的 Appkey。識別語種在項目的「功能配置」中設定（任務裏的「原語言」對阿里雲不生效），默認的普通話模型可識別中英混合；轉寫其它語種時，請在控制台把該項目的模型改爲對應語種。",
+  "phAliyunAppkey": "項目 Appkey",
+  "asrModelsAliyunTips": "模型固定爲 flash（錄音文件識別極速版），不可修改；實際識別語種與模型由 Appkey 對應項目在控制台的配置決定。",
+  "asrXfyunAppidTips": "訊飛開放平臺控制台 ▸ 應用的「服務接口認證信息」中的 APPID，可在 <a href='https://console.xfyun.cn/services/new_lfasr' style='color: blue'>錄音文件轉寫服務頁</a> 查看。需先在 <a href='https://www.xfyun.cn/services/lfasr' style='color: blue'>訊飛開放平臺</a> 註冊、創建應用並開通「錄音文件轉寫大模型」服務（按音頻時長計費，新用戶有免費體驗時長）。僅保存在本地。",
+  "phXfyunAppid": "8 位應用 ID，如 a1b2c3d4",
+  "asrXfyunApiKeyTips": "控制台「服務接口認證信息」中的 APIKey（對應接口參數 accessKeyId）。僅保存在本地。",
+  "phXfyunApiKey": "你的 APIKey",
+  "asrXfyunApiSecretTips": "控制台「服務接口認證信息」中的 APISecret（對應接口參數 accessKeySecret）。若報簽名校驗失敗（code 100009）請檢查此項；系統時間偏差過大會報 100008。僅保存在本地。",
+  "phXfyunApiSecret": "你的 APISecret",
+  "asrModelsXfyunTips": "語種檔位（兩檔均自動識別語言，任務的「原語言」僅用於上傳前校驗檔位是否支持）：autodialect 支持中文、英文及 202 種方言（含粵語），開通服務即可用；autominor 支持 37 個語種——中、英、日、韓、俄、法、西、阿拉伯、德、泰、越南、印地、葡、意、馬來、印尼、菲律賓、土耳其、希臘、捷克、烏爾都、孟加拉、泰米爾、烏克蘭、哈薩克、烏茲別克、波蘭、蒙古、斯瓦希里、豪薩、波斯、荷蘭、瑞典、羅馬尼亞、保加利亞、維吾爾、藏語，需聯繫訊飛商務人工對接單獨開通，未開通請勿選用。轉寫爲異步訂單制：上傳後服務端排隊處理，應用會自動輪詢結果；中途退出應用也不丟任務，重新運行同一任務會直接續查原訂單，不重複計費。",
+  "asrGladiaApiKeyTips": "<a href='https://app.gladia.io/' style='color: blue'>app.gladia.io 控制台</a> ▸「API Keys」註冊並創建的 API Key。免費檔每月 10 小時轉寫時長；注意：免費檔上傳的音頻會被 Gladia 用於模型訓練，付費檔不會。僅保存在本地。",
+  "phGladiaApiKey": "你的 Gladia API Key",
+  "asrModelsGladiaTips": "模型檔位（兩檔均自動識別語言，任務的「原語言」明確指定時會作爲提示上行）：solaria-1（默認）支持 100+ 語言（含中文、日韓等），覆蓋最全；solaria-3 爲英法德西意五種歐洲語言的實錄特化檔（嘈雜通話、多說話人更強），乾淨朗讀與其它語種反不如 solaria-1，請勿默認選用。轉寫爲異步任務制：上傳後服務端排隊處理，應用會自動輪詢結果；中途退出應用也不丟任務，重新運行同一任務會直接續查原任務，不重複計費。",
+  "asrApiUrlGladiaTips": "Gladia 端點的 Base URL，通常留空即用官方地址 https://api.gladia.io（走反向代理時再填寫）。"
 }

@@ -1,4 +1,9 @@
 {
+  "applyPromptPreset": "套用预设",
+  "promptPreset": {
+    "default": "通用翻译",
+    "multilingualToTraditional": "多语会议 → 繁体中文"
+  },
   "translateControl": "翻译服务配置",
   "translationServices": "翻译服务",
   "providerListTitle": "服务商",

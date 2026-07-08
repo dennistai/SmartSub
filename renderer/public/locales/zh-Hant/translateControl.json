@@ -1,4 +1,9 @@
 {
+  "applyPromptPreset": "套用模板",
+  "promptPreset": {
+    "default": "默認翻譯",
+    "multilingualToTraditional": "多語會議 → 繁體中文"
+  },
   "translateControl": "翻譯服務配置",
   "translationServices": "翻譯服務",
   "providerListTitle": "服務商",
@@ -37,17 +42,15 @@
   "API Key": "API Key",
   "systemPrompt": "系統提示詞",
   "systemPromptTips": "系統提示詞, 支持變量: <br /> ${sourceLanguage} 源語言 <br /> ${targetLanguage} 目標語言 <br /> ${content} 源字幕",
-  "applyPromptPreset": "套用模板",
-  "promptPreset": {
-    "default": "默認翻譯",
-    "multilingualToTraditional": "多語會議 → 繁體中文"
-  },
   "userPromptTips": "用戶提示詞, 支持變量: <br /> ${sourceLanguage} 源語言 <br /> ${targetLanguage} 目標語言 <br /> ${content} 源字幕",
   "batchSizeTip": "每次翻譯的字幕數量，建議設置爲 5-20 之間",
   "batchConcurrencyTip": "同時發起的翻譯批次數，最多 10。默認 1 爲順序處理；調大可以提升速度，但需要服務商配額支持，並可能觸發限流。",
   "testTranslation": "測試翻譯",
   "testSuccess": "測試成功",
   "testFailed": "測試失敗",
+  "autoDetectTrying": "當前結構化輸出設置失敗，正在嘗試 {{mode}}…",
+  "autoDetectSwitched": "已自動將「結構化輸出」切換爲 {{mode}} 並保存",
+  "autoDetectAllFailed": "已自動嘗試所有結構化輸出模式仍然失敗，問題可能出在 API Key、接口地址或模型名",
   "ollamaApiUrlTips": "本地 Ollama API 地址，請使用 chat 接口，一般爲 http://localhost:11434/api/chat。安裝 Ollama 請前往 <a href='https://ollama.com/download' style='color: blue'>Ollama 官網</a>。",
   "deeplxApiUrlTips": "DeepLX 需在本機單獨部署服務後再填寫地址。安裝與配置說明見 <a href='https://github.com/OwO-Network/DeepLX' style='color: blue'>DeepLX GitHub 項目</a>，啓動後默認地址爲 http://localhost:1188/translate",
   "DeerApiUrlTips": "DeerAPI 聚合 AI 平臺 ，(支持 grok3)密鑰，速度飛快，極其便宜，可支付寶/微信充值。 可前往 <a href='https://api.deerapi.com/register?aff=QvHM' style='color: blue'>DeerAPI</a> 申請",

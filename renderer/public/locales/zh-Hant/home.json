@@ -12,6 +12,8 @@
   "customSettings": "自定義設置",
   "maxConcurrentTasks": "最大併發任務數",
   "pleaseInputMaxConcurrentTasks": "請輸入最大併發任務數",
+  "maxConcurrentTasksHintSerialTranscribe": "該引擎共用單一本地運行時，多任務併發時「提取字幕」階段會自動排隊逐個執行；併發仍可加速多文件的音頻提取與字幕翻譯階段。",
+  "maxConcurrentTasksHintCloud": "雲端聽寫按任務併發執行；同一服務商的實際請求受其「併發請求數 / 請求間隔」設置全局約束，多任務疊加時自動排隊，避免觸發服務商限流。",
   "subtitleOutputFormat": "字幕輸出格式",
   "subtitleOutputFormatTip": "設置生成/翻譯後字幕文件的保存格式，對源字幕與翻譯字幕同時生效。校對模塊導入時會按文件後綴自動識別格式。TXT 爲純文本（無時間軸），LRC 僅含起始時間。",
   "format_srt": "SRT (.srt)",
@@ -59,6 +61,7 @@
   "generateOnly": "僅生成字幕",
   "translateOnly": "僅翻譯字幕",
   "proofread": "校對",
+  "proofreadTxtUnsupported": "TXT 文件不包含時間軸，暫不支持校對。請選擇 SRT/VTT/ASS 等包含時間軸的字幕文件。",
   "subtitleProofread": "字幕校對",
   "sourceSubtitle": "原文字幕",
   "targetSubtitle": "翻譯字幕",
@@ -218,6 +221,7 @@
   "split": "拆分",
   "mergeSuccess": "字幕已合併",
   "splitSuccess": "字幕已拆分",
+  "deleteSuccess": "字幕已刪除，可通過撤銷恢復",
   "splitSubtitleDesc": "選擇文字拆分位置和時間分配",
   "textSplitPosition": "文字拆分位置",
   "sourcePreview": "原文預覽",
@@ -246,6 +250,11 @@
   "selectAiProvider": "選擇 AI 服務",
   "selectProvider": "選擇服務商",
   "noAiProviderConfigured": "未配置 AI 翻譯服務，請先在設置中添加",
+  "notConfigured": "（未配置）",
+  "providerGroup": {
+    "configured": "已配置",
+    "notConfigured": "其它（未配置）"
+  },
   "customPrompt": "優化提示詞",
   "showCustomPrompt": "展開",
   "hideCustomPrompt": "收起",
@@ -297,5 +306,11 @@
   "errorReadSubtitle": "讀取字幕文件失敗：{{file}}",
   "errorConvertToVTT": "字幕轉換 VTT 失敗：{{file}}",
   "proofreadPageTitle": "校對字幕",
-  "proofreadPageDesc": "導入字幕逐條精修，支持 AI 批量優化"
+  "proofreadPageDesc": "導入字幕逐條精修，支持 AI 批量優化",
+  "cloudConsent": {
+    "title": "上傳音頻到雲端聽寫？",
+    "description": "本次任務使用雲端轉寫引擎，會提取每個文件的音軌並上傳到你配置的第三方服務端點。請勿用於敏感內容，並注意服務商的用量費用。",
+    "confirmOnce": "本次上傳",
+    "confirmRemember": "上傳並不再提醒"
+  }
 }
