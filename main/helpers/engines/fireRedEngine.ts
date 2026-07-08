@@ -20,10 +20,13 @@ import {
   subtitleCueFromSegment,
   trimSubtitleTrailingSilence,
 } from '../subtitleTiming';
+import { resplitSubtitleCues } from '../subtitleSegmentation';
 import { buildFireRedParams } from './fireRedParams';
+import { resolveEffectiveSettings } from './outcomePresets';
 import type { TranscribeContext, TranscriptionEngineAdapter } from './types';
 
-let activeTranscribeId: string | null = null;
+/** 在途转写 id 集合：任务级并发下可能同时存在多个（排队+执行），取消须精确到 id。 */
+const activeTranscribeIds = new Set<string>();
 
 type FireRedSelection = NonNullable<ReturnType<typeof resolveFireRedSelection>>;
 
@@ -54,7 +57,11 @@ function prewarmFireRed(formData: Record<string, unknown>): void {
       getInstalledFireRedModels(),
     );
     if (!selection) return;
-    const settings = store.get('settings') as Record<string, unknown>;
+    // 与 transcribe 同源派生 VAD 灵敏度，确保预热与正式转写的 VAD 配置一致。
+    const settings = resolveEffectiveSettings(
+      formData,
+      store.get('settings') as Record<string, unknown>,
+    );
     getSherpaAsrRuntime().prewarm(buildModelRequest(selection, settings));
     logMessage('firered (sherpa) prewarm started', 'info');
   } catch (error) {
@@ -71,7 +78,11 @@ async function transcribeFireRed(ctx: TranscribeContext): Promise<string> {
   event.sender.send('taskFileChange', { ...file, extractSubtitle: 'loading' });
 
   const { tempAudioFile, srtFile } = file;
-  const settings = store.get('settings') as Record<string, unknown>;
+  // 逐任务运行时派生（字幕效果档位 → VAD 灵敏度），不回写全局。
+  const settings = resolveEffectiveSettings(
+    formData,
+    store.get('settings') as Record<string, unknown>,
+  );
 
   if (!isSherpaLibInstalled()) {
     throw new Error(
@@ -102,11 +113,11 @@ async function transcribeFireRed(ctx: TranscribeContext): Promise<string> {
   const { id, result } = runtime.transcribe(model, tempAudioFile, (percent) =>
     event.sender.send('taskProgressChange', file, 'extractSubtitle', percent),
   );
-  activeTranscribeId = id;
+  activeTranscribeIds.add(id);
 
   const signal = ctx.signal ?? getTaskContext()?.signal;
   const onAbort = () => {
-    if (activeTranscribeId === id) runtime.cancel(id);
+    if (activeTranscribeIds.has(id)) runtime.cancel(id);
   };
   if (signal?.aborted) runtime.cancel(id);
   else signal?.addEventListener('abort', onAbort, { once: true });
@@ -121,13 +132,16 @@ async function transcribeFireRed(ctx: TranscribeContext): Promise<string> {
     throw error;
   } finally {
     signal?.removeEventListener('abort', onAbort);
-    activeTranscribeId = null;
+    activeTranscribeIds.delete(id);
   }
 
   if (signal?.aborted) throw new TaskCancelledError();
 
   const subtitles = trimSubtitleTrailingSilence(
-    (transcription?.segments || []).map(subtitleCueFromSegment),
+    resplitSubtitleCues(
+      (transcription?.segments || []).map(subtitleCueFromSegment),
+      formData as Record<string, unknown>,
+    ),
     tempAudioFile,
   );
   const formattedSrt = formatSrtContent(subtitles);
@@ -165,10 +179,9 @@ export const fireRedEngineAdapter: TranscriptionEngineAdapter = {
   },
 
   cancelActive(): void {
-    if (activeTranscribeId) {
-      getSherpaAsrRuntime().cancel(activeTranscribeId);
-      activeTranscribeId = null;
-    }
+    const runtime = getSherpaAsrRuntime();
+    activeTranscribeIds.forEach((id) => runtime.cancel(id));
+    activeTranscribeIds.clear();
   },
 
   prewarm(formData: Record<string, unknown>): void {

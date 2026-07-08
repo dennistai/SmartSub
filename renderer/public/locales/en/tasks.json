@@ -17,11 +17,47 @@
     "format": "Subtitle format"
   },
   "notConfigured": " (not configured)",
+  "providerGroup": {
+    "configured": "Configured",
+    "notConfigured": "Others (not configured)"
+  },
   "skippedDuplicates": "Skipped {{count}} duplicate file(s)",
   "goDownloadModel": "Download a model",
   "goConfigureProvider": "Set up a translation service",
   "advanced": "Advanced options",
   "advancedDesc": "Details you rarely change — the defaults are best practice",
+  "outcome": {
+    "label": "Subtitle effect",
+    "recommended": "Recommended",
+    "accurate": {
+      "title": "Most accurate text",
+      "desc": "Finest segmentation and the most complete punctuation; keeps each sentence as faithfully as possible. May occasionally add a stray line over silence/background noise.",
+      "scene": "Best for lectures, interviews, talking-head videos where complete text matters most"
+    },
+    "balanced": {
+      "title": "Balanced",
+      "desc": "Complete yet clean text with a stable timeline; stray lines over silence are basically gone — a safe choice for most videos.",
+      "scene": "Best for most videos; pick this if unsure"
+    },
+    "clean": {
+      "title": "Cleanest & most stable",
+      "desc": "Suppresses repeats and hallucinated lines most aggressively with the most restrained text; may drop some unclear speech.",
+      "scene": "Best for long videos or material with music / applause / long silence"
+    },
+    "custom": {
+      "title": "Custom",
+      "desc": "Manually tune context length, VAD, repetition reduction and other low-level parameters.",
+      "sectionTitle": "Custom parameters",
+      "sherpaNote": "For the current engine (FunASR / Qwen / FireRed), VAD is always on and there is no context-length / repetition concept. To fine-tune VAD sensitivity, use the Settings page."
+    },
+    "compare": {
+      "toggle": "See how the effects differ",
+      "caption": "Roughly how the same speech (with a short silence at the end) appears at each level:",
+      "accurate": "Today, let's go over this new feature. Thanks for watching.",
+      "balanced": "Today let's go over this new feature.",
+      "clean": "Today let's go over this new feature"
+    }
+  },
   "section": {
     "recognition": "Transcription",
     "output": "Output & saving",
@@ -29,9 +65,9 @@
   },
   "vad": {
     "label": "Voice activity detection (VAD)",
-    "on": "Faster and steadier; fewer repeated/hallucinated lines over silence or background noise. Timestamps may be slightly off.",
-    "off": "Timestamps hug the speech more closely, but silence/music may produce repeated or hallucinated lines.",
-    "hint": "Turn off when you need strict subtitle timing. This is a global setting and affects all tasks."
+    "on": "Faster and steadier: the built-in whisper engine only transcribes inside detected speech, skipping silence/background noise and greatly reducing repeated or hallucinated lines there; lines are aligned token-by-token to the speech segments, so the timeline hugs the speech and stays stable.",
+    "off": "Most complete text: the built-in whisper engine segments more finely with fuller punctuation (recommended for short/medium files and Chinese); stray lines over silence are curbed by an energy fallback; other engines such as faster-whisper may still produce repeated or hallucinated lines over silence/music.",
+    "hint": "Turn off for the most complete text and finest segmentation; keep on for the steadiest timeline and fewest stray lines over silence. This is a global setting and affects all tasks."
   },
   "reduceRepetition": {
     "label": "Reduce repetition / hallucinated lines",
@@ -51,6 +87,15 @@
     "off": "Off: convert characters only, keep the original wording. Best when Taiwanese speech was mis-transcribed as Simplified.",
     "hint": "Only applies when a Simplified transcription is converted to Traditional; native Traditional is unaffected."
   },
+  "subtitleLength": {
+    "label": "Subtitle line breaking",
+    "modeSmart": "Smart segmentation (recommended)",
+    "modeUnlimited": "No length limit",
+    "modeCustom": "Custom length limit",
+    "hintSmart": "The engine splits lines at pauses and punctuation, keeping each subtitle at a readable length.",
+    "hintUnlimited": "Split only at speech pauses and punctuation. Lines are never force-split by length and may run long.",
+    "hintCustom": "Lines over the limit are split at punctuation or word boundaries, never inside a word. CJK characters count as 2 (40 is about 20 Chinese characters); 30-50 suggested for Chinese, 40-60 for English."
+  },
   "chinesePunctuation": {
     "label": "Strip Chinese punctuation",
     "hint": "Replace Chinese punctuation (，。、？！ etc.) in Chinese subtitles with spaces and trim trailing spaces for cleaner subtitles. Applies to the source when the source language is Chinese, and to the translation when the target is Chinese."
@@ -66,7 +111,9 @@
     "openFolder": "Show in folder",
     "retry": "Retry",
     "remove": "Remove",
-    "embeddedSubtitle": "Extracted from embedded subtitles"
+    "embeddedSubtitle": "Extracted from embedded subtitles",
+    "proofreadTxtUnsupported": "TXT files do not include timing, so they cannot be proofread here. Generate SRT/VTT/ASS for proofreading, then export plain text after proofreading.",
+    "proofreadTxtUnsupportedShort": "TXT not supported"
   },
   "waiting": "Waiting",
   "interrupted": "Interrupted by app restart — retry to continue",

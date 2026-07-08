@@ -12,6 +12,8 @@
   "customSettings": "自定义设置",
   "maxConcurrentTasks": "最大并发任务数",
   "pleaseInputMaxConcurrentTasks": "请输入最大并发任务数",
+  "maxConcurrentTasksHintSerialTranscribe": "该引擎共用单一本地运行时，多任务并发时「提取字幕」阶段会自动排队逐个执行；并发仍可加速多文件的音频提取与字幕翻译阶段。",
+  "maxConcurrentTasksHintCloud": "云端听写按任务并发执行；同一服务商的实际请求受其「并发请求数 / 请求间隔」设置全局约束，多任务叠加时自动排队，避免触发服务商限流。",
   "subtitleOutputFormat": "字幕输出格式",
   "subtitleOutputFormatTip": "设置生成/翻译后字幕文件的保存格式，对源字幕与翻译字幕同时生效。校对模块导入时会按文件后缀自动识别格式。TXT 为纯文本（无时间轴），LRC 仅含起始时间。",
   "format_srt": "SRT (.srt)",
@@ -59,6 +61,7 @@
   "generateOnly": "仅生成字幕",
   "translateOnly": "仅翻译字幕",
   "proofread": "校对",
+  "proofreadTxtUnsupported": "TXT 文件不包含时间轴，暂不支持校对。请选择 SRT/VTT/ASS 等包含时间轴的字幕文件。",
   "subtitleProofread": "字幕校对",
   "sourceSubtitle": "原文字幕",
   "targetSubtitle": "翻译字幕",
@@ -218,6 +221,7 @@
   "split": "拆分",
   "mergeSuccess": "字幕已合并",
   "splitSuccess": "字幕已拆分",
+  "deleteSuccess": "字幕已删除，可通过撤销恢复",
   "splitSubtitleDesc": "选择文字拆分位置和时间分配",
   "textSplitPosition": "文字拆分位置",
   "sourcePreview": "原文预览",
@@ -246,6 +250,11 @@
   "selectAiProvider": "选择 AI 服务",
   "selectProvider": "选择服务商",
   "noAiProviderConfigured": "未配置 AI 翻译服务，请先在设置中添加",
+  "notConfigured": "（未配置）",
+  "providerGroup": {
+    "configured": "已配置",
+    "notConfigured": "其它（未配置）"
+  },
   "customPrompt": "优化提示词",
   "showCustomPrompt": "展开",
   "hideCustomPrompt": "收起",
@@ -297,5 +306,11 @@
   "errorReadSubtitle": "读取字幕文件失败：{{file}}",
   "errorConvertToVTT": "字幕转换 VTT 失败：{{file}}",
   "proofreadPageTitle": "校对字幕",
-  "proofreadPageDesc": "导入字幕逐条精修，支持 AI 批量优化"
+  "proofreadPageDesc": "导入字幕逐条精修，支持 AI 批量优化",
+  "cloudConsent": {
+    "title": "上传音频到云端听写？",
+    "description": "本次任务使用云端转写引擎，会提取每个文件的音轨并上传到你配置的第三方服务端点。请勿用于敏感内容，并注意服务商的用量费用。",
+    "confirmOnce": "本次上传",
+    "confirmRemember": "上传并不再提醒"
+  }
 }

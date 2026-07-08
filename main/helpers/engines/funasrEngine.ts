@@ -21,10 +21,13 @@ import {
   subtitleCueFromSegment,
   trimSubtitleTrailingSilence,
 } from '../subtitleTiming';
+import { resplitSubtitleCues } from '../subtitleSegmentation';
 import { buildFunasrParams } from './funasrParams';
+import { resolveEffectiveSettings } from './outcomePresets';
 import type { TranscribeContext, TranscriptionEngineAdapter } from './types';
 
-let activeTranscribeId: string | null = null;
+/** 在途转写 id 集合：任务级并发下可能同时存在多个（排队+执行），取消须精确到 id。 */
+const activeTranscribeIds = new Set<string>();
 
 type FunasrAsrSelection = NonNullable<
   ReturnType<typeof resolveFunasrAsrSelection>
@@ -59,8 +62,12 @@ function prewarmFunasr(formData: Record<string, unknown>): void {
       installedAsr,
     );
     if (!selection) return;
-    const settings = store.get('settings') as Record<string, unknown>;
     const { sourceLanguage } = formData as { sourceLanguage?: string };
+    // 与 transcribe 同源派生 VAD 灵敏度，确保预热与正式转写的 VAD 配置一致。
+    const settings = resolveEffectiveSettings(
+      formData,
+      store.get('settings') as Record<string, unknown>,
+    );
     getSherpaFunasrRuntime().prewarm(
       buildModelRequest(selection, settings, sourceLanguage),
     );
@@ -80,7 +87,11 @@ async function transcribeFunasr(ctx: TranscribeContext): Promise<string> {
 
   const { tempAudioFile, srtFile } = file;
   const { sourceLanguage } = formData as { sourceLanguage?: string };
-  const settings = store.get('settings') as Record<string, unknown>;
+  // 逐任务运行时派生（字幕效果档位 → VAD 灵敏度），不回写全局。
+  const settings = resolveEffectiveSettings(
+    formData,
+    store.get('settings') as Record<string, unknown>,
+  );
 
   if (!isSherpaLibInstalled()) {
     throw new Error(
@@ -112,11 +123,11 @@ async function transcribeFunasr(ctx: TranscribeContext): Promise<string> {
   const { id, result } = runtime.transcribe(model, tempAudioFile, (percent) =>
     event.sender.send('taskProgressChange', file, 'extractSubtitle', percent),
   );
-  activeTranscribeId = id;
+  activeTranscribeIds.add(id);
 
   const signal = ctx.signal ?? getTaskContext()?.signal;
   const onAbort = () => {
-    if (activeTranscribeId === id) runtime.cancel(id);
+    if (activeTranscribeIds.has(id)) runtime.cancel(id);
   };
   if (signal?.aborted) runtime.cancel(id);
   else signal?.addEventListener('abort', onAbort, { once: true });
@@ -131,13 +142,16 @@ async function transcribeFunasr(ctx: TranscribeContext): Promise<string> {
     throw error;
   } finally {
     signal?.removeEventListener('abort', onAbort);
-    activeTranscribeId = null;
+    activeTranscribeIds.delete(id);
   }
 
   if (signal?.aborted) throw new TaskCancelledError();
 
   const subtitles = trimSubtitleTrailingSilence(
-    (transcription?.segments || []).map(subtitleCueFromSegment),
+    resplitSubtitleCues(
+      (transcription?.segments || []).map(subtitleCueFromSegment),
+      formData as Record<string, unknown>,
+    ),
     tempAudioFile,
   );
   const formattedSrt = formatSrtContent(subtitles);
@@ -175,10 +189,9 @@ export const funasrEngineAdapter: TranscriptionEngineAdapter = {
   },
 
   cancelActive(): void {
-    if (activeTranscribeId) {
-      getSherpaFunasrRuntime().cancel(activeTranscribeId);
-      activeTranscribeId = null;
-    }
+    const runtime = getSherpaFunasrRuntime();
+    activeTranscribeIds.forEach((id) => runtime.cancel(id));
+    activeTranscribeIds.clear();
   },
 
   prewarm(formData: Record<string, unknown>): void {

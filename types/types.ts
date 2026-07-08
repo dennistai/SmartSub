@@ -1,4 +1,4 @@
-import type { EngineStatus } from './engine';
+import type { EngineStatus, TranscriptionEngine } from './engine';
 
 export interface ISystemInfo {
   modelsInstalled: string[];
@@ -49,6 +49,8 @@ export interface IFiles {
   tempAudioFile?: string;
   translatedSrtFile?: string;
   tempTranslatedSrtFile?: string;
+  /** 校对用无损中间态 sidecar，保存源文/译文/时间轴，避免直接读写有损交付物。 */
+  proofreadDataFile?: string;
   /** 本次转写实际使用的后端标签（如 "CUDA 12.4.0" / "Vulkan" / "CPU"） */
   whisperBackend?: string;
   /** 该文件走了内封软字幕直提（跳过抽音频 + ASR）：用于任务列表标识 */
@@ -74,6 +76,12 @@ export interface TaskProject {
 export interface IFormData {
   /** 任务类型（运行时由任务携带）：用于区分源字幕是 ASR 生成还是用户导入。 */
   taskType?: TaskProjectType;
+  /** 转写引擎（逐任务选择，缺省 builtin）。 */
+  transcriptionEngine?: TranscriptionEngine;
+  /** 转写模型名（引擎相关；云引擎为服务商实例内的模型 id）。 */
+  model?: string;
+  /** 云端听写：选中的云 ASR 服务商实例 id（transcriptionEngine==='cloud' 时必填）。 */
+  asrProviderId?: string;
   translateContent:
     | 'onlyTranslate'
     | 'sourceAndTranslate'
@@ -84,6 +92,12 @@ export interface IFormData {
   targetLanguage: string;
   translateRetryTimes: string;
   subtitleOutputFormat?: 'srt' | 'vtt' | 'ass' | 'lrc' | 'txt';
+  /**
+   * 生成字幕时单条字幕最大显示字数 / 宽度（CJK 记 2、其余记 1）。
+   * 0 或空 = 智能断句（引擎默认）；-1 = 不限制长度（仅按停顿/标点断句，不按字数硬切）；
+   * 正数 = 自定义上限（超出时在标点或词边界处拆分）。
+   */
+  maxSubtitleChars?: number;
   /** 中文标点去除（任务级开关）：开启后把中文标点替换为空格。作用于源字幕(中文源)与译文(中文目标)。缺省关闭。 */
   removeChinesePunctuation?: boolean;
   /** 同时输出纯文本 .txt（任务级开关）：开启后在所选格式之外，额外为源字幕与译文各写一份同名 .txt（无时间轴）。所选格式本身为 txt 时无效。缺省关闭。 */

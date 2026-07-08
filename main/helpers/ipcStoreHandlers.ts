@@ -2,7 +2,10 @@ import { app, ipcMain } from 'electron';
 import os from 'os';
 import { store } from './store';
 import { defaultUserConfig } from './utils';
+import { inferDisplayOutcome } from './engines/outcomePresets';
 import { getAndInitializeProviders } from './providerManager';
+import { getAsrProviders, setAsrProviders } from './asrProviderManager';
+import { testAsrConnection } from '../service/asr/testConnection';
 import { logMessage } from './logger';
 import { LogEntry } from './store/types';
 import { getBuildInfo } from './buildInfo';
@@ -58,6 +61,20 @@ export function setupStoreHandlers() {
     return getAndInitializeProviders();
   });
 
+  // 云端听写（在线 ASR）服务商实例：多实例、含凭据，无自动初始化（缺省空列表）。
+  ipcMain.on('setAsrProviders', async (event, providers) => {
+    setAsrProviders(providers);
+  });
+
+  ipcMain.handle('getAsrProviders', async () => {
+    return getAsrProviders();
+  });
+
+  // 云 ASR 实例连通性自测：跑在主进程规避渲染进程 CORS（对齐 testTranslation）。
+  ipcMain.handle('testAsrProvider', async (_event, provider) => {
+    return testAsrConnection(provider);
+  });
+
   // 用户配置相关处理
   ipcMain.on('setUserConfig', async (event, config) => {
     store.set('userConfig', config);
@@ -65,7 +82,19 @@ export function setupStoreHandlers() {
 
   ipcMain.handle('getUserConfig', async () => {
     const storedConfig = store.get('userConfig');
-    return { ...defaultUserConfig, ...storedConfig };
+    const merged: Record<string, unknown> = {
+      ...defaultUserConfig,
+      ...storedConfig,
+    };
+    // 字幕效果默认档：缺省时按既有旋钮惰性推断（全新/默认→均衡；老用户自定义→对应档或
+    // custom，逐字保留行为）。在此补齐而非写 store 默认值，避免回灌覆盖老用户底层旋钮。
+    if (merged.subtitleOutcome === undefined) {
+      merged.subtitleOutcome = inferDisplayOutcome(
+        merged,
+        store.get('settings') as Record<string, unknown>,
+      );
+    }
+    return merged;
   });
 
   // 设置相关处理

@@ -12,6 +12,8 @@
   "customSettings": "Custom Settings",
   "maxConcurrentTasks": "Max Concurrent Tasks",
   "pleaseInputMaxConcurrentTasks": "Enter Maximum Concurrent Tasks",
+  "maxConcurrentTasksHintSerialTranscribe": "This engine shares a single local runtime, so the transcription stage automatically queues and runs one file at a time. Concurrency still speeds up audio extraction and subtitle translation across files.",
+  "maxConcurrentTasksHintCloud": "Cloud transcription runs tasks concurrently. Requests to the same provider are globally capped by its Concurrency / Request Interval settings, so stacked tasks queue automatically to avoid provider rate limits.",
   "subtitleOutputFormat": "Subtitle Output Format",
   "subtitleOutputFormatTip": "Format used when saving generated/translated subtitle files (applies to both source and translated subtitles). The proofreading module auto-detects format by file extension on import. TXT is plain text (no timing); LRC keeps start times only.",
   "format_srt": "SRT (.srt)",
@@ -59,6 +61,7 @@
   "noContext": "Minimize subtitle repetition(0)",
   "importSubtitles": "Import Subtitles",
   "proofread": "Proofread",
+  "proofreadTxtUnsupported": "TXT files do not include timing, so they cannot be proofread here. Select SRT/VTT/ASS subtitles with timing instead.",
   "subtitleProofread": "Subtitle Proofreading",
   "sourceSubtitle": "Source Subtitle",
   "targetSubtitle": "Translated Subtitle",
@@ -218,6 +221,7 @@
   "split": "Split",
   "mergeSuccess": "Subtitles merged",
   "splitSuccess": "Subtitle split",
+  "deleteSuccess": "Subtitle deleted, undo to restore",
   "splitSubtitleDesc": "Choose text split position and time allocation",
   "textSplitPosition": "Text split position",
   "sourcePreview": "Source preview",
@@ -246,6 +250,11 @@
   "selectAiProvider": "Select AI Service",
   "selectProvider": "Select Provider",
   "noAiProviderConfigured": "No AI translation service configured, please add one in settings",
+  "notConfigured": " (not configured)",
+  "providerGroup": {
+    "configured": "Configured",
+    "notConfigured": "Others (not configured)"
+  },
   "customPrompt": "Optimization Prompt",
   "showCustomPrompt": "Expand",
   "hideCustomPrompt": "Collapse",
@@ -297,5 +306,11 @@
   "errorReadSubtitle": "Failed to read subtitle file: {{file}}",
   "errorConvertToVTT": "Failed to convert subtitle to VTT: {{file}}",
   "proofreadPageTitle": "Proofread Subtitles",
-  "proofreadPageDesc": "Import subtitles for line-by-line refinement with AI batch optimization"
+  "proofreadPageDesc": "Import subtitles for line-by-line refinement with AI batch optimization",
+  "cloudConsent": {
+    "title": "Upload audio to cloud ASR?",
+    "description": "This task uses a cloud transcription engine. The audio track of each file will be extracted and uploaded to the third-party endpoint you configured. Don't use it for sensitive content, and mind the provider's usage costs.",
+    "confirmOnce": "Upload this time",
+    "confirmRemember": "Upload and don't ask again"
+  }
 }

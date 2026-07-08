@@ -4,6 +4,7 @@ import {
   isRuntimeInstalled,
   readEngineManifest,
   normalizePyEngineVariant,
+  getParkedVariant,
 } from '../pythonRuntime/paths';
 import {
   getFasterWhisperModelsPath,
@@ -17,6 +18,11 @@ import {
   trimSubtitleTrailingSilence,
 } from '../subtitleTiming';
 import {
+  composeWordCues,
+  getSubtitleCueOptions,
+  wordsToTriples,
+} from '../subtitleSegmentation';
+import {
   getTaskContext,
   isTaskCancelledError,
   TaskCancelledError,
@@ -27,6 +33,7 @@ import {
   getWhisperLanguage,
   getFasterWhisperAntiRepetitionParams,
 } from './transcribeShared';
+import { resolveEffectiveSettings } from './outcomePresets';
 import type { TranscribeContext, TranscriptionEngineAdapter } from './types';
 
 /**
@@ -54,13 +61,13 @@ function formatCudaRuntimeHint(error: unknown): string {
   return `faster-whisper GPU(CUDA) 加速所需的运行库（cuBLAS/cuDNN）缺失或无法加载，无法使用 CUDA。请在「资源中心 → 引擎 → faster-whisper」将「计算设备」改为 CPU，或改用其他转写引擎。原始错误：${raw}`;
 }
 
-let activeFasterWhisperTranscribeId: string | null = null;
+/** 在途转写 id 集合：任务级并发下可能同时存在多个（排队+执行），取消须精确到 id。 */
+const activeFasterWhisperTranscribeIds = new Set<string>();
 
 function cancelFasterWhisperTranscription(): void {
-  if (activeFasterWhisperTranscribeId) {
-    getPythonRuntimeManager().cancel(activeFasterWhisperTranscribeId);
-    activeFasterWhisperTranscribeId = null;
-  }
+  const manager = getPythonRuntimeManager();
+  activeFasterWhisperTranscribeIds.forEach((id) => manager.cancel(id));
+  activeFasterWhisperTranscribeIds.clear();
 }
 
 /**
@@ -139,7 +146,11 @@ async function transcribeFasterWhisper(
     sourceLanguage?: string;
     prompt?: string;
   };
-  const settings = store.get('settings');
+  // 逐任务运行时派生（字幕效果档位 → useVAD / 抗重复参数包），不回写全局。
+  const settings = resolveEffectiveSettings(
+    formData,
+    store.get('settings') as Record<string, unknown>,
+  );
 
   const manager = getPythonRuntimeManager();
   let engineInfo;
@@ -237,10 +248,10 @@ async function transcribeFasterWhisper(
         );
       },
     });
-    activeFasterWhisperTranscribeId = id;
+    activeFasterWhisperTranscribeIds.add(id);
 
     const onAbort = () => {
-      if (activeFasterWhisperTranscribeId === id) manager.cancel(id);
+      if (activeFasterWhisperTranscribeIds.has(id)) manager.cancel(id);
     };
     if (signal?.aborted) {
       manager.cancel(id);
@@ -261,7 +272,7 @@ async function transcribeFasterWhisper(
       throw error;
     } finally {
       signal?.removeEventListener('abort', onAbort);
-      activeFasterWhisperTranscribeId = null;
+      activeFasterWhisperTranscribeIds.delete(id);
     }
   };
 
@@ -299,10 +310,25 @@ async function transcribeFasterWhisper(
     throw new TaskCancelledError();
   }
 
-  const subtitles = trimSubtitleTrailingSilence(
-    (transcription?.segments || []).map(subtitleCueFromSegment),
-    tempAudioFile,
-  );
+  // 任务级 maxSubtitleChars：仅「正数上限」才从词级时间戳重建成句（composeWordCues
+  // 统一出口，含硬切回溯，宽度由真实词时间保证）；0 = 智能断句与 -1 = 不限制长度都
+  // 沿用引擎段级断句——whisper 原生按句分段，本就不按宽度硬切。
+  const segments = transcription?.segments || [];
+  const cueOptions = getSubtitleCueOptions(formData as Record<string, unknown>);
+  let subtitles;
+  if (cueOptions && Number.isFinite(cueOptions.maxWidth)) {
+    const wordTriples = segments.flatMap((segment) => {
+      const triples = wordsToTriples(segment?.words);
+      return triples.length > 0 ? triples : [subtitleCueFromSegment(segment)];
+    });
+    subtitles = composeWordCues(
+      wordTriples,
+      formData as Record<string, unknown>,
+    );
+  } else {
+    subtitles = segments.map(subtitleCueFromSegment);
+  }
+  subtitles = trimSubtitleTrailingSilence(subtitles, tempAudioFile);
   const formattedSrt = formatSrtContent(subtitles);
   await fs.promises.writeFile(srtFile, formattedSrt);
 
@@ -336,6 +362,7 @@ export const fasterWhisperEngineAdapter: TranscriptionEngineAdapter = {
       state: 'ready',
       version: formatInstalledVersion(manifest),
       variant: normalizePyEngineVariant(manifest?.variant),
+      parkedVariant: getParkedVariant('faster-whisper') ?? undefined,
     };
   },
 

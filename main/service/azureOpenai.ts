@@ -1,5 +1,16 @@
 import { AzureOpenAI } from 'openai';
 import { TRANSLATION_JSON_SCHEMA } from '../translate/constants/schema';
+import {
+  TaskCancelledError,
+  throwIfSignalCancelled,
+} from '../helpers/taskContext';
+import type { TranslationRequestOptions } from '../translate/types';
+import {
+  isStructuredOutputUnsupportedError,
+  resolveStructuredOutputMode,
+  runWithStructuredOutputFallback,
+  type StructuredOutputMode,
+} from './structuredOutputFallback';
 
 type AzureOpenAIProvider = {
   apiUrl: string;
@@ -8,13 +19,40 @@ type AzureOpenAIProvider = {
   prompt?: string;
   systemPrompt?: string;
   useJsonMode?: boolean;
+  structuredOutput?: StructuredOutputMode;
+  strictStructuredOutput?: boolean;
 };
 
+/** 老 api-version 不支持 response_format，任何结构化模式都退化为普通输出 */
+function buildResponseFormat(
+  mode: StructuredOutputMode,
+  apiVersion: string,
+): Record<string, any> | undefined {
+  if (parseFloat(apiVersion) < 2023.12) return undefined;
+  if (mode === 'json_schema') {
+    return {
+      type: 'json_schema',
+      json_schema: {
+        name: 'subtitle_translation',
+        schema: TRANSLATION_JSON_SCHEMA,
+      },
+    };
+  }
+  if (mode === 'json_object') {
+    return { type: 'json_object' };
+  }
+  return undefined;
+}
+
 export async function translateWithAzureOpenAI(
-  text: string[],
+  text: string | string[],
   provider: AzureOpenAIProvider,
+  _sourceLanguage?: string,
+  _targetLanguage?: string,
+  options?: TranslationRequestOptions,
 ) {
   try {
+    throwIfSignalCancelled(options?.signal);
     // 处理Azure OpenAI的endpoint URL
     const url = new URL(provider.apiUrl);
     const pathParts = url.pathname.split('/');
@@ -34,8 +72,7 @@ export async function translateWithAzureOpenAI(
       'You are a professional subtitle translation tool';
     const userPrompt = Array.isArray(text) ? text.join('\n') : text;
 
-    // 创建请求参数
-    const requestParams: any = {
+    const baseParams: any = {
       model: undefined,
       messages: [
         { role: 'system', content: sysPrompt },
@@ -44,23 +81,35 @@ export async function translateWithAzureOpenAI(
       temperature: 0.3,
     };
 
-    // 如果启用了JSON模式，添加相关参数
-    if (provider.useJsonMode !== false) {
-      // 确保apiVersion支持JSON模式
-      if (parseFloat(apiVersion) >= 2023.12) {
-        // Azure OpenAI API支持的JSON模式参数
-        requestParams.response_format = { type: 'json_object' };
-
-        requestParams.response_format.schema = TRANSLATION_JSON_SCHEMA;
-      }
-    }
-
-    const completion = await openai.chat.completions.create(requestParams);
+    // 结构化输出走共享回退链（json_schema → json_object → disabled）
+    const completion = await runWithStructuredOutputFallback({
+      startMode: resolveStructuredOutputMode(provider, 'json_schema'),
+      strict: provider.strictStructuredOutput === true,
+      signal: options?.signal,
+      shouldFallback: (from, error) =>
+        from === 'json_schema' || isStructuredOutputUnsupportedError(error),
+      onFallback: (from, to, error) =>
+        console.warn(
+          `Azure OpenAI structured output ${from} failed, falling back to ${to}:`,
+          error,
+        ),
+      attempt: (mode) => {
+        const responseFormat = buildResponseFormat(mode, apiVersion);
+        const requestParams = responseFormat
+          ? { ...baseParams, response_format: responseFormat }
+          : baseParams;
+        return openai.chat.completions.create(requestParams, {
+          signal: options?.signal,
+        });
+      },
+    });
+    throwIfSignalCancelled(options?.signal);
 
     const result = completion?.choices?.[0]?.message?.content?.trim();
 
     return result;
   } catch (error) {
+    if (options?.signal?.aborted) throw new TaskCancelledError();
     console.error('Azure OpenAI translation error:', error);
     throw new Error(`Azure OpenAI translation failed: ${error.message}`);
   }

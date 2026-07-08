@@ -4,6 +4,8 @@ import {
   acquire,
   resolveRateLimitConfig,
 } from '../translate/utils/rateLimiter';
+import { throwIfSignalCancelled } from '../helpers/taskContext';
+import type { TranslationRequestOptions } from '../translate/types';
 
 /**
  * DeepLX 翻译（非官方 DeepL，需用户自建/自填端点）。
@@ -15,6 +17,8 @@ const DEFAULT_TARGET = 'ZH';
 
 function toDeepLCode(lang: string | undefined, fallback: string): string {
   if (!lang) return fallback;
+  // 繁体中文保留地区码（DeepL 使用 ZH-HANT）；其余取主语言码并大写。
+  if (lang === 'zh-Hant') return 'ZH-HANT';
   const code = String(lang).split('-')[0].toUpperCase();
   return code || fallback;
 }
@@ -24,7 +28,9 @@ export default async function deeplx(
   proof: Record<string, any>,
   sourceLanguage?: string,
   targetLanguage?: string,
+  options?: TranslationRequestOptions,
 ): Promise<string | string[]> {
+  throwIfSignalCancelled(options?.signal);
   const { apiUrl } = proof || {};
   if (!apiUrl) {
     throw new Error('DeepLX endpoint not configured (network)');
@@ -42,12 +48,13 @@ export default async function deeplx(
 
   const translateOne = async (text: string): Promise<string> => {
     if (!text || !text.trim()) return text ?? '';
-    await acquire(rateKey, rateCfg);
+    await acquire(rateKey, rateCfg, options?.signal);
     const res = await axios.post(
       apiUrl,
       { text, source_lang, target_lang },
-      { timeout: TRANSLATION_REQUEST_TIMEOUT },
+      { timeout: TRANSLATION_REQUEST_TIMEOUT, signal: options?.signal },
     );
+    throwIfSignalCancelled(options?.signal);
     const data = res?.data || {};
     const out =
       typeof data.data === 'string'
